@@ -1,0 +1,370 @@
+<!-- Это вторая сборка моего резюме и портфолио.  -->
+<!-- Верстал на Бутстрапе, так что страница должна корректно отображаться на всех устройствах. -->
+
+<!-- Брейкпоинты  -->
+<!-- XS – телефоны меньше 576px. -->
+<!-- SM — от 576px. Телефоны в горизонтальном режиме. -->
+<!-- MD — от 768px. Планшеты. -->
+<!-- LG — от 992px. Маленькие экраны десктопов. -->
+<!-- XL — от 1200px. Экраны десктопов побольше. -->
+<!-- XXL — от 1400px. Самые большие экраны. -->
+
+
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Подключаем стили Бутстрапа, а ниже свои -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" media="screen" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
+  <link rel="stylesheet" media="screen" href="css/custom.css" />
+  <link rel="stylesheet" media="print" href="css/custom-print.css" />
+
+  <!-- Подключаем jquery и скрипт печати -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+
+  <!-- Подключаем фавикон -->
+  <link rel="icon" href="https://em-content.zobj.net/thumbs/240/apple/354/man-technologist_1f468-200d-1f4bb.png" />
+
+  <title>Артем Рощупка // Резюме</title>
+
+  <meta name="description" content="Рассказываю, где работал и что сделал">
+
+  <!-- Блок opengraph, чтобы все красиво отображалось в соцсетках -->
+  <meta property="og:title" content="Портфолио и резюме" />
+  <meta property="og:description" content="Рассказываю, где работаю и что сделал" />
+  <meta property="og:image" content="https://roschupka.ru/done/img/pic-for-fb.jpg" />
+  <meta property="og:type" content="website" />
+</head>
+
+<body>
+  <!-- Контейнер с фотографией специально для мобилок. Дальше 767px исчезает -->
+  <div class="container d-md-none">
+    <div class="row">
+      <div class="col-12">
+        <img class="img-fluid profile-mobile" src="img/profile-mobile.jpg" alt="Портрет Артема" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Контейнер-обертка, который до 992px делает поля чуть больше -->
+  <div class="wrapper container">
+
+    <header>
+      <div class="row justify-content-between">
+        <div class="col-12 d-none d-md-block">
+          <img class="img-fluid" src="img/shapka.jpg" alt="Портрет Артема" />
+        </div>
+        <div class="col-11 col-lg-7">
+          <h1 class="d-none">Артём Рощупка</h1>
+          <p>Выстраиваю процессы в&nbsp;команде и&nbsp;создаю контент, который решает бизнес-задачи. Специализируюсь на&nbsp;соцсетях, почтовых рассылках и&nbsp;спецпроектах.</p>
+          <p>Могу взять на&nbsp;себя работу с&nbsp;подрядчиками, разработать и&nbsp;внедрить шаблоны для рутинных задач или редакционные правила. Если потребуется, возьму интервью у&nbsp;эксперта, соберу презентацию или лендинг.</p>
+          <p>Отслеживаю эффективность проделанной работы, делаю выводы по&nbsp;цифрам, тестирую гипотезы. Стараюсь не&nbsp;создавать контент ради контента, а&nbsp;работать на&nbsp;цели бренда.</p>
+          <p>Пишите в&nbsp;телеграм <a href="https://t.me/gonzo_tema" target="_blank">@gonzo_tema</a> или на&nbsp;почту <a href="mailto:tema@roschupka.ru">tema@roschupka.ru</a></p>
+        </div>
+        <div class="d-none d-lg-block col-lg-4">
+          <div class="typed-text-container">
+            <span class="typed-text-lg"></span>
+          </div>
+          <div class="typed-text-print d-none">
+            <p>Окончил первую ступень Школы редакторов бюро Горбунова и&nbsp;Воронежский журфак. Пользуюсь Трелло, Ноушеном, Фотошопом, Миро. Немного разбираюсь в&nbsp;верстке.</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- Печатный текст про образование и инструменты, которыми я владею. После 992px пропадает -->
+      <aside>
+        <div class="row">
+          <div class="typed-text-container col-11 d-lg-none">
+            <span class="typed-text"></span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Большая часть про то, где и кем я работал -->
+      <section id="workplace">
+
+        <!-- Заголовок H2 -->
+        <div class="row">
+          <div class="col-11 col-lg-7">
+            <h2>Где и кем я работал</h2>
+          </div>
+        </div>
+
+        <!-- Редактор в Открытии -->
+        <div class="workplace row justify-content-between">
+          <div class="col-11">
+            <h3>Редактор<span>Банк «Открытие» || Январь 2022 — Сейчас</span></h3>
+          </div>
+          <div class="col-11 col-lg-7 col-xxl-6">
+            <p>В&nbsp;короткие сроки перестроил работу с&nbsp;контентом для банковских соцсетей. Запустил телеграм-канал вместо заблокированных Инстаграма, Фейсбука и&nbsp;Твитера. Нанял контент-агентство и&nbsp;создал внешнюю редакцию. Половина публикаций в&nbsp;соцсетях &laquo;Открытия&raquo; сейчас&nbsp;&mdash; работа внешней редакции под моим управлением.</p>
+
+            <h4>Подробнее о задачах и достижениях</h4>
+            <ul>
+              <li>Прописал редакционную политику, разработал шаблоны и&nbsp;инструкции по&nbsp;работе с&nbsp;контентом. Собрал все в&nbsp;общую базу знаний в&nbsp;Ноушене.</li>
+              <li>Руковожу внешней редакцией, которую создал вместе с&nbsp;контент-агентством. Собираю инфоповоды от&nbsp;внутренних заказчиков, редактирую и&nbsp;согласую публикации. Всю работу фиксируем в&nbsp;Трелло.</li>
+              <li>Выдвигаю и&nbsp;тестирую гипотезы на&nbsp;прирост подписчиков, на&nbsp;увеличение переходов по&nbsp;ссылке, на&nbsp;то, как влияет количество публикаций на&nbsp;пользовательское поведение.</li>
+              <li>Анализирую статистику из&nbsp;соцсетей, смотрю эффективность в&nbsp;Яндекс-метрике.</li>
+              <li>Веду бюджет внешней редакции: планирую и&nbsp;согласую траты, провожу оплаты, веду документооборот.</li>
+            </ul>
+
+            <details>
+              <summary>Примеры контента</summary>
+              <ul>
+                <li><a href=" https://vk.com/wall-44666449_64413" target="_blank">Что такое ключевая ставка</a>, <a href="https://t.me/otkritie/123" target="_blank">инфляция</a> и&nbsp;<a href="https://t.me/otkritie/165" target="_blank">дефолт</a>&nbsp;&mdash; подготовил серию публикаций в&nbsp;феврале&mdash;марте 2022&nbsp;года. СМИ тогда много писали о&nbsp;ключевой ставке, рекордной инфляции и&nbsp;возможном дефолте. Важно было успокоить клиентов и&nbsp;объяснить, что все не&nbsp;так страшно, как пишут.</li>
+                <li><a href="https://vk.com/@otkritiecorp-vse-pro-nalogovyi-vychet-v-2022-godu" target="_blank">Ультимативный гайд по&nbsp;налоговым вычетам</a>&nbsp;&mdash; пересобрал и&nbsp;актуализировал публикации о&nbsp;налоговом вычете из&nbsp;2018 года в&nbsp;одном грандиозном лонгриде.</li>
+                <li><a href="https://t.me/otkritie/294" target="_blank">Гайд по&nbsp;выплатам беременным и&nbsp;мамам</a>&nbsp;&mdash; вместе с&nbsp;экспертом подготовил материал, который помогает женщинам разобраться в&nbsp;пособиях, которые им&nbsp;полагаются. Пособий много, условия получения разные&nbsp;&mdash; разобраться самостоятельно сложно.</li>
+                <li><a href="https://vk.com/@otkritiecorp-pochemu-vazhno-strahovat-kvartiru" target="_blank">Почему важно страховать квартиру</a>&nbsp;&mdash; заметил, что аналогичные тексты в&nbsp;интернете обычно абстрактные: непонятно, что такое страховой случай, а&nbsp;что им&nbsp;не&nbsp;является. Разобрался в&nbsp;предмете с&nbsp;коллегами из&nbsp;Росгосстраха и&nbsp;добавил в&nbsp;текст конкретные примеры.</li>
+                <li><a href="https://dzen.ru/media/id/62237eb19dc50b5d92de75a0/62974ab13a691c540870f0e8" target="_blank">Как научить ребенка ответственно обращаться с&nbsp;деньгами</a>&nbsp;&mdash; вместе с&nbsp;агентством и&nbsp;экспертом и&nbsp;подготовил текст к&nbsp;Международному дню защиты детей.</li>
+                <li><a href="https://vk.com/@otkritiecorp-kak-zarabotat-na-hlame" target="_blank">Сколько можно заработать на&nbsp;хламе</a>&nbsp;&mdash; переделал изначально скучный и&nbsp;абстрактный текст о&nbsp;дополнительном варианте заработка. Нашел героя для публикации, сделал акцент на&nbsp;конкретных цифрах и&nbsp;пользу для читателя.</li>
+                <li><a href="https://t.me/otkritie/454" target="_blank">Как выбрать модель семейного бюджета</a>&nbsp;&mdash; еще один пример работы с&nbsp;экспертом.</li>
+              </ul>
+            </details>
+          </div>
+          <div class="d-none d-lg-block col-lg-4">
+            <img class="done-quote img-fluid" src="img/done_quote.png" alt="Отзыв агентства Сделаем" />
+            <p class="caption">Отзыв редактора Юлии из&nbsp;агентства &laquo;<a href="https://sdelaem.agency/cases/otkritie" target="_blank">Сделаем</a>&raquo;</p>
+          </div>
+        </div>
+
+        <!-- Инфлюенс-менеджер -->
+        <div class="workplace row justify-content-between">
+          <div class="col-11 col-lg-9">
+            <h3>Инфлюенс-менеджер<span>Банк «Открытие» || Январь 2020 — Декабрь 2021</span></h3>
+            <p>Запустил в&nbsp;банке систематическую работу с&nbsp;крупными youtube-блогерами и&nbsp;отраслевыми телеграм-каналами. За&nbsp;два года выпустил более 60&nbsp;интеграций и&nbsp;постов в&nbsp;телеграме, общим охватом около 30&nbsp;миллионов.</p>
+          </div>
+          <div class="col-12">
+            <video class="img-fluid" autoplay loop muted controls>
+              <source src="vid/Showreel_2020-21_final.mp4" type="video/mp4" alt="Шоурилл" />
+            </video>
+          </div>
+          <div class="col-11 col-lg-7 col-xxl-6 print-page-breaker">
+            <h4>Подробнее о задачах и достижениях</h4>
+            <ul>
+              <li>В&nbsp;условиях пандемии провел закрытый тендер среди нескольких крупных агентств. Адаптировал инфлюенс-стратегию победителей и&nbsp;защитил ее&nbsp;внутри банка.</li>
+              <li>Отвечал за&nbsp;все направление работы целиком: от&nbsp;обработки входящих задач и&nbsp;брифинга подрядчиков, до&nbsp;продакшена и&nbsp;выводов по&nbsp;итогам размещений. Вел бюджет: планировал и&nbsp;согласовывал траты.</li>
+              <li>Самостоятельно писал и&nbsp;редактировал сложные имиджевые тексты для отраслевых телеграм-каналов. Неоднократно писал, согласовывал, оплачивал и&nbsp;выпускал публикации день в&nbsp;день.</li>
+            </ul>
+
+            <details>
+              <summary>Любимые интеграции</summary>
+              <ul>
+                <li><a href=" https://youtu.be/k6e5AuBbE3I?t=1088" target="_blank">«Самый умный комик»</a>&nbsp;&mdash; позволил комикам отойти от&nbsp;согласованного сценария и&nbsp;немного поимпровизировать на&nbsp;тему рекламируемого продукта. Ролик перевыполнил план по&nbsp;охвату в&nbsp;два раза и&nbsp;собрал 1100&nbsp;кликов.</li>
+                <li><a href="https://youtu.be/pz_lz1BXbZM" target="_blank">«Плохие песни»</a>&nbsp;&mdash; убедил внутренних заказчиков сделать рекламную интеграцию в&nbsp;форме пародийного клипа. Правил с&nbsp;комиками сценарий, контролировал постпродакшен. Получилась яркая реклама, которая перевыполнила план по&nbsp;охвату на&nbsp;178%.</li>
+                <li><a href="https://youtu.be/mOOdCN13IXI?t=1434" target="_blank">«Читка»</a>&nbsp;&mdash; еще один пример совместного творчества с&nbsp;youtube-комиками. Правил сценарий и&nbsp;терпеливо объяснял внутренним заказчикам, какой фильм косплеит канал. Несмотря на&nbsp;яркую рекламную интеграцию, сам выпуск шоу не&nbsp;достиг прогнозных показателей по&nbsp;просмотрам.</li>
+              </ul>
+            </details>
+          </div>
+          <div class="d-none d-lg-block col-lg-4">
+            <img class="img-fluid" src="img/showreel-caption.png" alt="Этот шоурил мы сделали с ребятами из агентства Rabbit&Carrot" />
+          </div>
+        </div>
+
+        <!-- Автор в Профи.ру -->
+        <div class="workplace">
+          <div class="row">
+            <div class="col-11 col-lg-10 col-xxl-9">
+              <h3>Внештатный автор рассылки<span>Профи.ру || Январь 2019 — Декабрь 2019</span></h3>
+              <p>Написал несколько писем для внутренней рассылки сервиса. Брал интервью у&nbsp;специалистов Профи, готовил и&nbsp;согласовывал материалы с&nbsp;редакцией сервиса.</p>
+            </div>
+            <div class="row profi-print">
+              <div class="profi col-6 col-lg-4">
+                <a href="https://drive.google.com/file/d/1tllzwkC3WvIybcSfBcn2HlpdI_XHaz_D/view?usp=sharing" target="_blank">
+                  <img class="img-fluid" src="img/Profi-1.png" alt="Скриншот письма Профи" />
+                  <p>Истории артистов, которые работают в&nbsp;Новый год</p>
+                </a>
+              </div>
+
+              <div class="profi col-6 col-lg-4">
+                <a href="https://drive.google.com/file/d/19b0xNo8QX33J0poMx3vmfXRJkLdoUIlE/view?usp=sharing" target="_blank">
+                  <img class="img-fluid" src="img/Profi-2.png" alt="Скриншот письма Профи" />
+                  <p>Как фотографу организовать семейную фотосессию</p>
+                </a>
+              </div>
+
+              <div class="profi col-6 col-lg-4">
+                <a href="https://drive.google.com/file/d/1HNhFT_xPhyI3G9ph4ByfIqkDh8MXCdxm/view?usp=sharing" target="_blank">
+                  <img class="img-fluid" src="img/Profi-3.png" alt="Скриншот письма Профи" />
+                  <p>Юристы и&nbsp;бухгалтеры отвечают на&nbsp;вопросы</p>
+                </a>
+              </div>
+
+              <div class="profi col-6 col-lg-4">
+                <a href="https://drive.google.com/file/d/1SL56QOQMkDI-1fNE-mBkmskKbREdL-CV/view?usp=sharing" target="_blank">
+                  <img class="img-fluid" src="img/Profi-4.png" alt="Скриншот письма Профи" />
+                  <p>5&nbsp;типичных ошибок в&nbsp;тексте о&nbsp;себе</p>
+                </a>
+              </div>
+
+              <div class="profi d-none d-lg-block col-lg-4">
+                <a href="https://drive.google.com/file/d/1TJTTAq2ghRGeZK9InRNHfz6zZ3wnJhZt/view?usp=sharing" target="_blank">
+                  <img class="img-fluid" src="img/Profi-5.png" alt="Скриншот письма Профи" />
+                  <p>Как преподавать онлайн</p>
+                </a>
+              </div>
+
+              <div class="profi d-none d-lg-block col-lg-4">
+                <a href="https://drive.google.com/file/d/1c49h4cZ4RxeIzOA0pDOEct-9dPQoK-ec/view?usp=sharing" target="_blank">
+                  <img class="img-fluid" src="img/Profi-6.png" alt="Скриншот письма Профи" />
+                  <p>Как зарабатывать на&nbsp;онлайн-консультациях</p>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Копирайтер в Открытии -->
+        <div class="workplace row justify-content-between">
+          <!-- На 992px заголовок разбился на две строчки и было некрасиво. Пришлось вынести его в отдельную колонку. -->
+          <div class="col-11 col-lg-10">
+            <h3>Копирайтер → Старший копирайтер<span>Банк «Открытие» || Октябрь 2018 — Декабрь 2020</span></h3>
+          </div>
+          <div class="col-11 col-lg-7 col-xxl-6">
+            <p>Пришел в&nbsp;команду, чтобы помочь банку рассказывать о&nbsp;продуктах массовой аудитории понятно и&nbsp;интересно. Сделал ставку на&nbsp;полезный контент и&nbsp;за&nbsp;первый год работы без бюджета увеличил количество подписчиков в&nbsp;три раза.</p>
+
+            <h4>Подробнее о задачах и достижениях</h4>
+            <ul>
+              <li>Собирал инфоповоды по&nbsp;подразделениям банка, вникал в&nbsp;суть, составлял контент-план для соцсетей, писал и&nbsp;согласовывал публикации.</li>
+              <li>Работал с&nbsp;отделом маркетинга над продвижением банковских продуктов.</li>
+              <li>Руководил двумя копирайтерами. Распределял нагрузку, вычитывал тексты перед публикацией. Сформировал короткий список редакционных правил. Если кто-то из&nbsp;копирайтеров не&nbsp;справлялся, а&nbsp;сроки горели, писал сам.</li>
+              <li>Составлял подробные&nbsp;ТЗ для дизайнера, подбирал референсы, определял приоритетность задач.</li>
+              <li>Вооружившись статистикой, бесконечно тестировал и&nbsp;адаптировал форматы контента.</li>
+              <li>Написал, согласовал и&nbsp;выпустил 130 публикаций в&nbsp;Инстаграме, Вконтакте и&nbsp;Фейсбуке. Отредактировал еще 105&nbsp;публикаций.</li>
+            </ul>
+
+            <details>
+              <summary>Примеры контента</summary>
+              <ul>
+                <li><a href=" https://vk.com/wall-44666449_20203" target="_blank">Как экономить и&nbsp;не&nbsp;сойти с&nbsp;ума</a>&nbsp;&mdash; упаковал тему в&nbsp;историю и&nbsp;добавил в&nbsp;конце деталь с&nbsp;покупкой шубы. Как результат, половина комментариев&nbsp;&mdash; положительные и&nbsp;про публикацию.</li>
+                <li><a href="https://vk.com/@otkritiecorp-kak-teper-dotyanut-do-zarplaty" target="_blank">Как дотянуть до&nbsp;зарплаты</a>&nbsp;&mdash; гайд, как жить после праздников или крупных незапланированных покупок. Добавил в&nbsp;текст калькулятор, который иллюстрирует, сколько денег можно потратить в&nbsp;день.</li>
+                <li><a href="https://vk.com/wall-44666449_20065" target="_blank">Как пользоваться кредиткой</a>&nbsp;&mdash; объяснил, как считается льготный период кредитной карты. Сейчас я&nbsp;бы улучшил этот пост, добавив в&nbsp;карусель иллюстрацию с&nbsp;графиком.</li>
+              </ul>
+            </details>
+          </div>
+          <div class="d-none d-lg-block col-lg-5">
+            <img class="iphone img-fluid" src="img/social_iphone.png" alt="Мокап странички в инстаграме" />
+          </div>
+        </div>
+
+        <!-- Проджект в Кэрроте -->
+        <div class="workplace carrot row print-page-breaker">
+          <div class="col-11 col-lg-7 col-xxl-9">
+            <h3>Проджект-менеджер<span>Агентство «Кэррот» || Май 2018 — Октябрь 2018</span></h3>
+            <p>Делал так, чтобы рекламные интеграции у&nbsp;популярных блогеров выходили в&nbsp;срок и&nbsp;по&nbsp;брифу. Формулировал задания для блогеров, контролировал продакшен и&nbsp;согласовывал результат. Собирал статистику, делал выводы.</p>
+          </div>
+        </div>
+
+        <!-- До Кэррота -->
+        <div class="d-none d-lg-block row">
+          <div class="workplace-previously col-lg-10 col-xxl-9">
+            <p>До&nbsp;октября 2018 года успел поработать в&nbsp;Нетологии, в&nbsp;дирекции международного театрального фестиваля и&nbsp;эвент-менеджером в&nbsp;торговом центре. Открыл собственные бар и салон красоты. Продал оба бизнеса.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Большая часть с еще какими-нибудь примерами работ -->
+      <section id="what-else">
+
+        <!-- Заголовок H2 -->
+        <div class="row">
+          <div class="col-11 col-lg-7">
+            <h2>Что еще сделал</h2>
+          </div>
+        </div>
+
+        <!-- Плакат -->
+        <div class="what-else row">
+          <div class="col-11 col-lg-10 col-xxl-9">
+            <h3>Тест и плакат «Как вести себя в соцсетях»</h3>
+            <p>После того, как летом 2018 года топ-менеджер &laquo;Леруа Мерлен&raquo; неаккуратно высказалась у&nbsp;себя в&nbsp;Фейсбуке и&nbsp;попала в&nbsp;скандал, я&nbsp;подготовил шуточный тест для сотрудников банка о&nbsp;правилах поведения в&nbsp;соцсетях.</p>
+            <p>В&nbsp;тесте нет правильных и&nbsp;неправильных ответов. Мораль такая: вести себя можно как угодно, но&nbsp;у&nbsp;каждого действия и&nbsp;высказывания есть последствия.</p>
+            <p>В&nbsp;конце теста добавил ссылку на&nbsp;плакат с&nbsp;короткими рекомендациями. <a href="https://roschupka.ru/blog/all/vedite-sebya-prilichno/" target="_blank">Подробный рассказ о&nbsp;работе</a></p>
+          </div>
+          <div class="col-12">
+            <img class="img-fluid" src="img/test-mockup.png" alt="Тест и плакат для сотрудников банка" />
+          </div>
+        </div>
+
+        <!-- Тестовые задания -->
+        <div class="what-else tests row">
+          <div class="col-11">
+            <h3>Тестовые задания</h3>
+          </div>
+
+          <div class="col-11 col-md-6 col-lg-4">
+            <h4>Продуктовый редактор в&nbsp;Авито</h4>
+            <ul>
+              <li><a href="https://docs.google.com/document/d/1-l5ewm38FQ5HETjaNVgeogeygwjQez9sI8FYgmDEX4g/edit?usp=sharing" target="_blank">Первая попытка</a></li>
+              <li><a href="https://docs.google.com/document/d/1aAzgBBGFI5ejA5y3YgyuYkTc-cLMkKiuOfuY0d3e2ro/edit?usp=sharing" target="_blank">Вторая попытка</a></li>
+            </ul>
+          </div>
+
+          <div class="col-11 col-md-6 d-lg-none d-xl-block col-xl-4">
+            <h4>Копирайтер в&nbsp;Марусю</h4>
+            <ul>
+              <li><a href="https://docs.google.com/document/d/1EdvMN5o8T32DdTzYdbVLjDSxjfk_iY10szcTHs1VA2I/edit?usp=sharing" target="_blank">Общее задание</a></li>
+              <li><a href="https://docs.google.com/document/d/1hAr84kQ1kKmuYkdwGq3BU0IuqVDCq40-YcIfSap1SjY/edit?usp=sharing" target="_blank">Финальное тестовое задание</a></li>
+            </ul>
+          </div>
+
+          <!-- Специальный дубль для 992-1200px -->
+          <div class="d-none d-lg-block col-lg-4 d-xl-none">
+            <h4>Копирайтер<br>в Марусю</h4>
+            <ul>
+              <li><a href="https://docs.google.com/document/d/1EdvMN5o8T32DdTzYdbVLjDSxjfk_iY10szcTHs1VA2I/edit?usp=sharing" target="_blank">Общее задание</a></li>
+              <li><a href="https://docs.google.com/document/d/1hAr84kQ1kKmuYkdwGq3BU0IuqVDCq40-YcIfSap1SjY/edit?usp=sharing" target="_blank">Финальное тестовое задание</a></li>
+            </ul>
+          </div>
+
+          <div class="col-11 col-md-6 col-lg-4">
+            <h4>Копирайтер в&nbsp;Mail.ru&nbsp;Group</h4>
+            <ul>
+              <li><a href="https://docs.google.com/document/d/1V7lBCIlKRIFDJiu3Nw7RBTYAPaCB0xwpdqWrbeOKTTQ/edit?usp=sharing" target="_blank">Тестовое для внутрикома</a></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="row">
+        <div class="col-11 col-lg-9">
+          <p>Резюме и портфолио Артема Рощупки. Обновлено 31 декабря 2022 года.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    jQuery(document).ready(function () {
+      var typed = new Typed(".typed-text", {
+        strings: ["Окончил первую ступень Школы редакторов бюро Горбунова и&nbsp;Воронежский журфак.", "Пользуюсь Трелло, Ноушеном, Фотошопом, Миро. Немного разбираюсь в&nbsp;верстке."],
+        typeSpeed: 90,
+        startDelay: 20,
+        backDelay: 700,
+        backSpeed: 50,
+        smartBackspace: true,
+        loop: true,
+      });
+
+      var typed = new Typed(".typed-text-lg", {
+        strings: ["Окончил первую ступень Школы редакторов бюро Горбунова и&nbsp;Воронежский журфак.", "Пользуюсь Трелло, Ноушеном, Фотошопом, Миро. Немного разбираюсь в&nbsp;верстке."],
+        typeSpeed: 90,
+        startDelay: 20,
+        backDelay: 700,
+        backSpeed: 50,
+        smartBackspace: true,
+        loop: true,
+      });
+    });
+  </script>
+</body>
+
+</html>

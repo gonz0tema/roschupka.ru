@@ -1,0 +1,264 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap");
+
+:root {
+  --backgroundColor: #fff;
+  --headerColor: rgb(74, 74, 74);
+  --linkColor: rgba(0, 79, 131, 1);
+  --linkUnderlineColor: rgba(0, 79, 131, .1);
+  --linkHoverColor: rgba(176, 48, 0, 1);
+  --linkHoverUnderlineColor: rgba(176, 48, 0, .1);
+  --linkVisitedColor: rgba(128, 0, 128, 1);
+  --linkVisitedUnderlineColor: rgba(128, 0, 128, 0.1);
+  --keyColor: rgba(0, 79, 131, 1);
+  --keyBGColor: rgba(0, 79, 131, .1);
+}
+
+body {
+  background: var(--backgroundColor);
+  margin-top: 30px;
+  font-family: "Source Sans Pro", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+  line-height: 1.5rem;
+  /* Настроил почти все через rem и em
+  Ключевой размер шрифта задается тут */
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 900;
+  color: var(--headerColor);
+}
+
+h1 {
+  font-size: 4.5rem;
+  line-height: 1em;
+  margin-bottom: 0.75em;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 0.6em;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+h4,
+summary {
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding-top: 0.5em;
+  color: var(--headerColor);
+}
+
+.caption {
+  font-size: 0.85rem;
+  line-height: 1.15em;
+  text-align: center;
+  padding: 1em 10px 10px 0px;
+  /* Отдельный стиль для подписи под картинками
+  Пока используется только под отзывом от Сделаем */
+}
+
+/* ----------------- */
+/* КРАСИВЫЕ ССЫЛОЧКИ */
+/* ----------------- */
+
+a {
+  color: var(--linkColor);
+  text-decoration-color: var(--linkUnderlineColor);
+}
+
+a:hover {
+  color: var(--linkHoverColor);
+  text-decoration-color: var(--linkHoverUnderlineColor);
+}
+
+a:visited {
+  color: var(--linkVisitedColor);
+  text-decoration-color: var(--linkVisitedUnderlineColor);
+}
+
+a,
+a:hover,
+a:visited {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* ------------- */
+/* КОНТЕНТ-ЧАСТЬ */
+/* ------------- */
+
+.profile-mobile {
+  margin-bottom: 35px;
+  /* Отступ от моей фотографии на мобилках
+  После 767px фото уже не отображается */
+}
+
+header .img-fluid {
+  margin-bottom: 3rem;
+  /* Отступ от портрета уже на планшетах и компах
+  Отображается с 768px и дальше */
+}
+
+.typed-text-container {
+  height: 3rem;
+  margin: 1rem 0 2rem;
+  /* Контейнер для текста, который печатается
+  Высоту задал специально
+  Без нее она гуляет и сайт скачет */
+}
+
+.typed-text,
+.typed-text-lg {
+  font-size: 1.5rem;
+  font-weight: 200;
+  color: var(--keyColor);
+}
+
+.workplace,
+.what-else {
+  margin-bottom: 3rem;
+}
+
+.workplace span {
+  display: block;
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+.workplace li {
+  margin-top: 1rem;
+  line-height: 1.3rem;
+}
+
+.done-quote {
+  border-radius: 10px;
+  box-shadow: 1px 1px 20px 2px rgb(0 0 0 / 10%);
+  color: var(--headerColor);
+}
+
+video {
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+
+.profi p {
+  text-align: center;
+  line-height: 1rem;
+}
+
+.profi:hover {
+  -webkit-transform: scale(1.1);
+  -ms-transform: scale(1.1);
+  transform: scale(1.1);
+  transition-duration: 0.33s;
+}
+
+.workplace-previously {
+  background-color: var(--keyBGColor);
+  padding: 20px 20px 30px 12px;
+  color: #4a4a4a;
+  border-radius: 10px;
+}
+
+.what-else .img-fluid {
+  border-radius: 10px;
+}
+
+footer {
+  margin-top: 50px;
+  color: #4a4a4a;
+  font-size: 0.8rem;
+}
+
+/* ---------------------- */
+/* ЧАСТЬ ПРО АДАПТИВНОСТЬ */
+/* ---------------------- */
+
+@media (max-width: 991.98px) {
+  .wrapper {
+    padding: 0 5.2%;
+    /* Дополнительные поля для мобилки. 
+    Процент считается от ширишы экрана.
+    На 992px отключаю эти поля */
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 992px) {
+  header {
+    margin-bottom: 3rem;
+    /* На 992px печатный текст уходит влево, под фотографию
+    Нужно было сделать отступ от текста о себе */
+  }
+
+  h2 {
+    font-size: 3rem;
+  }
+
+  h3 {
+    font-size: 2rem;
+  }
+
+  h4,
+  summary {
+    font-size: 1.5rem;
+  }
+
+  .typed-text-container {
+    margin: 0;
+  }
+
+  .profi p {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .workplace,
+  .workplace-previously {
+    margin-bottom: 4rem;
+    /* workplace-previously - это класс для серой плашки с инфой, кем я работал до Кэррота */
+  }
+
+  .carrot {
+    margin-bottom: 0;
+    /* Убираю отступ после Кэррота, потому что появляется плашка*/
+  }
+}
+
+@media (min-width: 1200px) {
+  .iphone {
+    max-height: 520px;
+  }
+}
+
+@media (min-width: 1400px) {
+  body {
+    font-size: 19px;
+  }
+
+  .iphone {
+    max-height: 610px;
+  }
+}
+
+@media print {
+  h1 {
+    display: block;
+  }
+}
