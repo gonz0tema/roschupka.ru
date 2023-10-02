@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+body {
+    -webkit-font-smoothing: antialiased;
+    font-family: Roboto;
+}
+
+/*-------------------------------------*/
+/* Большая часть про десктопы          */
+/*-------------------------------------*/
+
+
+.desktop {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    background: url(https://roschupka.ru/main/img/fon.png) 100% 100% repeat;
+}
+
+.desktop .fon {
+    position: absolute;
+    width: 100vw;
+    bottom: 0px;
+    right: 0px;
+}
+
+.desktop img {
+    max-width: 100%;
+    height: auto;
+}
+
+.desktop .links {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    right: 48%;
+    bottom: 10%;
+    
+    font-style: normal;
+    font-weight: 900;
+    font-size: calc(20px + 1vw);
+    line-height: 1.15em;
+    text-align: right;
+    color: white;
+}
+
+.footer {
+    position: fixed; 
+    left: 0; 
+    bottom: 0; 
+    padding: 10px; 
+    width: 100%; 
+
+    font-style: normal;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5); 
+    font-size: 14px;
+    line-height: 1.15em;
+}
+
+a {
+    color: white;
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #a8d2fa;
+    transition-duration: .33s;
+}
+
+
+/*-------------------------------------*/
+/* Большая часть про мобилки           */
+/*-------------------------------------*/
+
+.mobile {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    background: url(https://roschupka.ru/main/img/fon.png) 100% 100% repeat;
+}
+
+.mobile .fon {
+    position: fixed;
+    width: 100vw;
+    bottom: 0px;
+    right: 0px;
+}
+
+.mobile img {
+    width: 100%;
+    height: auto;
+}
+
+.mobile .links {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    left: 7%;
+    bottom: 20%;
+
+    font-style: normal;
+    font-weight: 900;
+    font-size: calc(5px + 5vh);
+    line-height: 1.15em;
+    text-align: right;
+    color: white;
+}
+
+/*-------------------------------------*/
+/* Большая часть про адаптивность      */
+/*-------------------------------------*/
+
+@media (max-width: 1199px) {
+    .desktop .links {
+        bottom: 7%;
+    }
+}
+
+@media (min-width: 1025px) {
+    .mobile {
+        display: none;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 1024px) {
+    .mobile {
+        display: none;
+    }
+    .desktop .links {
+        bottom: 5%;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 1024px) {
+    .desktop {
+        display: none;
+    }
+}
+
+@media (max-width: 991px) {
+    .desktop .links {
+        font-size: 25px;
+    }
+}
+
+@media (max-width: 767px) {
+    .desktop .links {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 575px) {
+    .desktop .links {
+        font-size: 17px;
+        bottom: 6%;
+    }
+}
+
+@media (orientation: portrait) and (max-width: 575px) {
+    .mobile .links {
+        font-size: 7vw;
+    }
+}
