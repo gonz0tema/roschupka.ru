@@ -1,4 +1,19 @@
-/* Это вторая версия стилей для моего блога */
+/* Это 2.5 версия оформления моего блога. */
+/* Поправил размеры заголовков и отступы. */
+/* Постарался сделать какую-то систему из этого всего. */
+
+/* 20/30px — базовый шрифт */
+/* 20px — базовый отступ между элементами */
+
+/* 30/40px — H3 без отступа после */
+
+/* 40/50px — H2 */
+/* 40px — отступ перед H2 */
+/* 30px — отступ после Н2 */
+
+/* 60/55px — H1 */
+/* 50px — отступ после Н1 */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
 
@@ -8,39 +23,30 @@ body {
 
 :root {
 
-    --foregroundColor: #333;
-    /* цвет текста */
-    --headingsColor: #464848;
-    /* цвет заголовков */
+    --foregroundColor: rgb(51, 51, 51); /* цвет текста */
+    --headingsColor: rgb(70, 72, 72); /* цвет заголовков */
+    --boldColor: rgb(51, 51, 51); /* цвет болда */
 
-    --noteTitleFontSize: 54px;
-    /* размер шрифта заголовков */
-    --noteTitleLineHeight: 1.3em;
-    /* интерлиньяж заголовков */
+    --noteTitleFontSize: 55px; /* размер шрифта заголовков */
+    --noteTitleLineHeight: 60px; /* интерлиньяж заголовков */
 
-    --noteTextFontSize: 20px;
-    /* размер шрифта заметок */
-    --noteTextLineHeight: 1.67;
-    /* интерлиньяж в заметках */
+    --noteTextFontSize: 20px; /* размер шрифта заметок */
+    --noteTextLineHeight: 30px; /* интерлиньяж в заметках */
 
-    --columnSpacing: 30px;
-    /* расстояние между колонками в таблице */
+    --blogTitleFontSize: 25px; /* размер шрифта в названии блога */
+    --blogTitleLineHeight: 25px; /* интерлиньяж в названии блога */
 
-    --blogTitleFontSize: 25px;
-    /* размер шрифта в названии блога */
-    --blogTitleLineHeight: 1em;
-    /* интерлиньяж в названии блога */
+    --displayLogoMarginal: none; /* не показывать аватарку рядом с названием блога */
+    --displayLogoCompact: none; /* не показывать лого на маленьких экранах */
+    --adminColor: rgba(51, 51, 51, 0.25); /* цвет администраторских иконок */
 
-    --displayLogoCompact: none;
-    /* не показывать лого на маленьких экранах */
-    --adminColor: rgba(0, 0, 0, 0.25);
-    /* цвет администраторских иконок */
+    --columnSpacing: 25px; /* расстояние между столбцами в таблицах */
 
 }
 
 
 /* ------------------------------------ */
-/* ШРИФТЫ                               */
+/* Подключаю шрифты                     */
 /* ------------------------------------ */
 
 body,
@@ -51,143 +57,29 @@ button,
 h1,
 h2,
 h3,
-table,
 blockquote,
 .flag,
 .footer,
 .e2-text-picture,
-.e2-note-tags {
+.e2-note-tags,
+.disclaimer {
     font-family: "Open Sans", sans-serif;
 }
 
-.e2-note-text {
+.e2-note-text,
+.e2-note-snippet {
     font-family: 'Merriweather', serif;
 }
 
 
 /* ------------------------------------ */
-/* ЗАГОЛОВКИ И ОСНОВНЫЕ ЭЛЕМЕНТЫ        */
-/* ------------------------------------ */
-
-.e2-note h1 {
-    font-weight: 800;
-    margin: 0 0 15px 0;
-    padding-right: 0px;
-}
-
-@media (max-width: 767px) {
-    .e2-note h1 {
-        font-size: 43.875px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1024px) {
-    .e2-note h1 {
-        font-size: 47.25px;
-    }
-}
-
-/* Убрать подчеркивание у заголовков записей */
-.e2-note h1 a,
-.e2-note h1 a:visited,
-.title h1 a,
-.title h1 a:visited {
-    border: 0;
-}
-
-/* Убрал звездочку у фейвори-заметок */
-.e2-note-favourite-title:after {
-    content: "";
-}
-
-.e2-note h2 {
-    font-weight: 800;
-    font-size: 42px;
-    line-height: 1.3em;
-}
-
-@media (max-width: 767px) {
-    .e2-note h2 {
-        font-size: 34.125px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1024px) {
-    .e2-note h2 {
-        font-size: 36.75px;
-    }
-}
-
-/* Заголовки третьего уровня */
-/* Не смог найти в блоге, где я их использовал */
-.e2-text h3 {
-    font-size: 19px;
-    line-height: 30px;
-    padding-top: 1px;
-    padding-bottom: 9px;
-}
-
-/* Ограничение ширины картинок и видео */
-.e2-text-picture,
-.e2-text-picture.fotorama,
-.e2-text-video,
-.e2-text-audio {
-    max-width: 720px;
-}
-
-/* Отступ после абзацев */
-.e2-text p,
-.e2-text-table {
-    padding-bottom: 1.2em;
-    margin: 20px 0;
-}
-
-@media (max-width: 1024px) {
-
-    .e2-text p,
-    .e2-text-table {
-        margin: 5px 0;
-    }
-}
-
-/* Уменьшаем отступ между ссылками, когда выводим все посты за год, например */
-.e2-note-list p {
-    padding-bottom: 0;
-    margin: 10px;
-}
-
-/* Чуть больший отступ между пунктами списка */
-.e2-text ol {
-    margin: 0px 0px 20px 0px;
-}
-
-/* Полупрозрачные элементы внизу страницы */
-.footer,
-.e2-rss,
-.e2-rss-button {
-    color: rgba(0, 0, 0, 0.4);
-}
-
-/* Превью заметки, когда ищешь по тэгу */
-.e2-note-snippet {
-    font-size: 16px;
-    line-height: 24px;
-}
-
-/* Отступ от текста превью до меты */
-.e2-note-snippet p {
-    margin: 0 0 10px 0;
-}
-
-
-/* ------------------------------------ */
-/* ШАПКА БЛОГА                          */
+/* Навожу лоск в шапке блога            */
 /* ------------------------------------ */
 
 .title h1,
 .title h1 a,
 .title h1 a:visited {
-    color: var(--foregroundColor);
+    color: var(--headingsColor);
 }
 
 .title h1 a:hover,
@@ -203,7 +95,80 @@ a.portfolio {
 
 
 /* ------------------------------------ */
-/* МОИ СОБСТВЕННЫЕ ЭЛЕМЕНТЫ             */
+/* Заголовки и отступы                  */
+/* ------------------------------------ */
+
+.e2-note h1 {
+    font-weight: 800;
+    margin: 0 0 50px;
+    padding-right: 0px;
+}
+
+.e2-note h2 {
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 50px;
+    margin: 40px 0 30px;
+}
+
+.e2-text h3 {
+    font-size: 30px;
+    line-height: 40px;
+    font-weight: 800;
+    margin: 20px 0 0;
+}
+
+.e2-text p,
+.e2-text-table,
+.e2-text ol {
+    margin: 0 0 20px;
+}
+
+/* ------------------------------------ */
+/* Навожу красоту                       */
+/* ------------------------------------ */
+
+/* Ограничение ширины картинок и видео */
+.e2-text-picture,
+.e2-text-picture.fotorama,
+.e2-text-video,
+.e2-text-audio {
+    max-width: 720px;
+}
+
+/* Убрать подчеркивание у заголовков записей */
+.e2-note h1 a,
+.e2-note h1 a:visited,
+.title h1 a,
+.title h1 a:visited {
+    border: 0;
+}
+
+/* Убрал звездочку у фейвори-заметок */
+.e2-note-favourite-title:after {
+    content: "";
+}
+
+/* Полупрозрачные элементы внизу страницы */
+.footer,
+.e2-rss,
+.e2-rss-button {
+    color: rgba(51, 51, 51, 0.4);
+}
+
+/* Превью заметки, когда ищешь по тэгу */
+.e2-note-snippet {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+/* Отступ от текста превью до меты */
+.e2-note-snippet p {
+    margin: 0 0 10px;
+}
+
+/* ------------------------------------ */
+/* Мои собственные элементы             */
 /* ------------------------------------ */
 
 /* Очень громкая фраза. Сейчас выделяется желтой плашкой */
@@ -211,10 +176,10 @@ a.portfolio {
     background-color: rgb(255, 250, 218);
     font-weight: 800;
     font-size: 35px;
-    line-height: 1.2em;
+    line-height: 45px;
     padding: 20px 15px 30px 15px;
     border: none;
-    margin: 20px 0 40px;
+    margin: 0 0 20px;
     max-width: 720px
 }
 
@@ -229,12 +194,6 @@ a.portfolio {
     line-height: var(--smallLineHeight);
     position: relative;
     margin: 0 !important;
-}
-
-@media (max-width: 1023px) {
-    .note {
-        display: none;
-    }
 }
 
 /* Кпопка для заметки про тест */
@@ -259,18 +218,57 @@ a.button:active {
     background: white;
 }
 
+/* Дисклеймер для заметки про вино */
+.disclaimer {
+    background-color: rgb(242, 242, 242); 
+    max-width: 720px; 
+    border: none; 
+    color: rgba(51, 51, 51, 0.7);
+    padding: 20px 60px 30px 15px;
+    font-size: 18px;
+    line-height: 27px;
+}
+
+.disclaimer h3 {
+    color: rgba(70, 72, 72, 0.7);
+}
+
+.disclaimer p,
+.disclaimer h3 {
+    margin: 0 0 10px;
+}
+
+/* Снимаю ограничение на ширину картинок, если надо */
+.big-picture .e2-text-picture,
+.big-picture .e2-text-picture.fotorama,
+.big-picture .e2-text-video,
+.big-picture .e2-text-audio {
+    max-width: 900px;
+}
+
 /* ----------------- */
-/* МОБИЛКА           */
+/* Мобилка           */
 /* ----------------- */
 
-@media (max-width: 767px) {
-    .e2-note-text {
-        font-size: 16.25px;
+@media (max-width: 1023px) {
+    .note {
+        display: none;
     }
 }
 
-@media (min-width: 768px) and (max-width: 1024px) {
+@media (max-width: 1024px) {
     .e2-note-text {
-        font-size: 17.5px;
+        font-size: 18px;
+        line-height: 27px;
+    }
+
+    .e2-note h1 {
+        font-size: 46px;
+        line-height: 50px;
+    }
+
+    .e2-note h2 {
+        font-size: 36px;
+        line-height: 44px;
     }
 }
