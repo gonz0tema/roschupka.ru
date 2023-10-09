@@ -73,7 +73,121 @@ blockquote,
 
 
 /* ------------------------------------ */
-/* Навожу лоск в шапке блога            */
+/* ЗАГОЛОВКИ И ОСНОВНЫЕ ЭЛЕМЕНТЫ        */
+/* ------------------------------------ */
+
+.e2-note h1 {
+    font-weight: 800;
+    margin: 0 0 15px 0;
+    padding-right: 0px;
+}
+
+@media (max-width: 767px) {
+    .e2-note h1 {
+        font-size: 43.875px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .e2-note h1 {
+        font-size: 47.25px;
+    }
+}
+
+/* Убрать подчеркивание у заголовков записей */
+.e2-note h1 a,
+.e2-note h1 a:visited,
+.title h1 a,
+.title h1 a:visited {
+    border: 0;
+}
+
+/* Убрал звездочку у фейвори-заметок */
+.e2-note-favourite-title:after {
+    content: "";
+}
+
+.e2-note h2 {
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 1.3em;
+}
+
+@media (max-width: 767px) {
+    .e2-note h2 {
+        font-size: 34.125px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    .e2-note h2 {
+        font-size: 36.75px;
+    }
+}
+
+/* Заголовки третьего уровня */
+/* Не смог найти в блоге, где я их использовал */
+.e2-text h3 {
+    font-size: 19px;
+    line-height: 30px;
+    padding-top: 1px;
+    padding-bottom: 9px;
+}
+
+/* Ограничение ширины картинок и видео */
+.e2-text-picture,
+.e2-text-picture.fotorama,
+.e2-text-video,
+.e2-text-audio {
+    max-width: 720px;
+}
+
+/* Отступ после абзацев */
+.e2-text p,
+.e2-text-table {
+    padding-bottom: 1.2em;
+}
+
+@media (max-width: 1024px) {
+
+    .e2-text p,
+    .e2-text-table {
+        margin: 5px 0;
+    }
+}
+
+/* Уменьшаем отступ между ссылками, когда выводим все посты за год, например */
+.e2-note-list p {
+    padding-bottom: 0;
+    margin: 10px;
+}
+
+/* Чуть больший отступ между пунктами списка */
+.e2-text ol {
+    margin: 0px 0px 20px 0px;
+}
+
+/* Полупрозрачные элементы внизу страницы */
+.footer,
+.e2-rss,
+.e2-rss-button {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* Превью заметки, когда ищешь по тэгу */
+.e2-note-snippet {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+/* Отступ от текста превью до меты */
+.e2-note-snippet p {
+    margin: 0 0 10px 0;
+}
+
+
+/* ------------------------------------ */
+/* ШАПКА БЛОГА                          */
 /* ------------------------------------ */
 
 .title h1,
