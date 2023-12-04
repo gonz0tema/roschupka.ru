@@ -188,6 +188,7 @@ footer {
 @media (max-width: 375px) {
   .typed-text-container {
     height: 6rem;
+  }
 }
 
 @media (max-width: 991.98px) {
