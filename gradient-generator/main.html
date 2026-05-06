@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор градиентов</title>
+<link rel="stylesheet" href="css/gradient-generator.css">
+<script>
+  // Применяем тему до отрисовки, чтобы избежать мигания
+  (() => {
+    try {
+      const saved = localStorage.getItem('gradient-theme');
+      if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1>Генератор градиентов</h1>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Переключить тему" title="Переключить тему">☾</button>
+    </div>
+
+    <div class="preview">
+      <canvas id="preview" width="1920" height="1080"></canvas>
+    </div>
+
+    <div class="panel">
+      <div class="control">
+        <label>Цвет 1 <span class="value" id="color1Val">#ff5f6d</span></label>
+        <input type="color" id="color1" value="#ff5f6d">
+      </div>
+
+      <div class="control">
+        <label>Цвет 2 <span class="value" id="color2Val">#3a7bd5</span></label>
+        <input type="color" id="color2" value="#3a7bd5">
+      </div>
+
+      <div class="control">
+        <label>Зернистость <span class="value" id="grainVal">25</span></label>
+        <input type="range" id="grain" min="0" max="100" value="25">
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" id="shuffle">🔀 Перемешать</button>
+        <button class="btn-primary" id="download">⬇ Скачать PNG</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('preview');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  const color1Input = document.getElementById('color1');
+  const color2Input = document.getElementById('color2');
+  const grainInput  = document.getElementById('grain');
+  const color1Val = document.getElementById('color1Val');
+  const color2Val = document.getElementById('color2Val');
+  const grainVal  = document.getElementById('grainVal');
+
+  const shuffleBtn = document.getElementById('shuffle');
+  const downloadBtn = document.getElementById('download');
+  const themeToggleBtn = document.getElementById('themeToggle');
+
+  // ---- theme ----
+  const THEME_KEY = 'gradient-theme';
+  const updateThemeIcon = () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    themeToggleBtn.textContent = isDark ? '☀' : '☾';
+  };
+  updateThemeIcon();
+
+  themeToggleBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      document.documentElement.removeAttribute('data-theme');
+      try { localStorage.setItem(THEME_KEY, 'light'); } catch (e) {}
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      try { localStorage.setItem(THEME_KEY, 'dark'); } catch (e) {}
+    }
+    updateThemeIcon();
+  });
+
+  // ---- color helpers ----
+  const hexToRgb = (hex) => {
+    const m = hex.replace('#','');
+    return {
+      r: parseInt(m.substring(0,2), 16),
+      g: parseInt(m.substring(2,4), 16),
+      b: parseInt(m.substring(4,6), 16),
+    };
+  };
+
+  const rgbToHsl = ({r,g,b}) => {
+    r/=255; g/=255; b/=255;
+    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+    let h, s, l = (max+min)/2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max-min;
+      s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+      switch (max) {
+        case r: h = (g-b)/d + (g<b?6:0); break;
+        case g: h = (b-r)/d + 2; break;
+        case b: h = (r-g)/d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: h*360, s: s*100, l: l*100 };
+  };
+
+  const hslToCss = (h,s,l,a=1) => `hsla(${h.toFixed(1)}, ${s.toFixed(1)}%, ${l.toFixed(1)}%, ${a})`;
+
+  const lerpHsl = (a, b, t) => {
+    let dh = b.h - a.h;
+    if (dh > 180) dh -= 360;
+    if (dh < -180) dh += 360;
+    return {
+      h: (a.h + dh*t + 360) % 360,
+      s: a.s + (b.s - a.s) * t,
+      l: a.l + (b.l - a.l) * t,
+    };
+  };
+
+  // ---- mesh state ----
+  const NUM_BLOBS = 6;
+  let seeds = [];
+
+  const generateSeeds = () => {
+    seeds = [];
+    for (let i = 0; i < NUM_BLOBS; i++) {
+      seeds.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.35 + Math.random() * 0.35,
+        t: Math.random(),
+        a: 0.7 + Math.random() * 0.3,
+      });
+    }
+  };
+
+  // ---- noise cache ----
+  let noiseCanvas = null;
+  let noiseCtx = null;
+  const buildNoise = () => {
+    noiseCanvas = document.createElement('canvas');
+    noiseCanvas.width = W;
+    noiseCanvas.height = H;
+    noiseCtx = noiseCanvas.getContext('2d');
+    const img = noiseCtx.createImageData(W, H);
+    const data = img.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      data[i] = v;
+      data[i+1] = v;
+      data[i+2] = v;
+      data[i+3] = 255;
+    }
+    noiseCtx.putImageData(img, 0, 0);
+  };
+
+  // ---- render ----
+  const render = () => {
+    const c1 = rgbToHsl(hexToRgb(color1Input.value));
+    const c2 = rgbToHsl(hexToRgb(color2Input.value));
+    const grainAmount = parseInt(grainInput.value, 10) / 100;
+
+    ctx.save();
+    ctx.filter = 'none';
+    const baseGrad = ctx.createLinearGradient(0, 0, W, H);
+    baseGrad.addColorStop(0, hslToCss(c1.h, c1.s, c1.l));
+    baseGrad.addColorStop(1, hslToCss(c2.h, c2.s, c2.l));
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    ctx.save();
+    ctx.filter = 'blur(80px)';
+    for (const s of seeds) {
+      const cx = s.x * W;
+      const cy = s.y * H;
+      const radius = s.r * Math.max(W, H) * 0.6;
+      const mix = lerpHsl(c1, c2, s.t);
+      const accent = { h: mix.h, s: Math.min(100, mix.s * 1.05), l: Math.min(85, Math.max(30, mix.l)) };
+
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      g.addColorStop(0, hslToCss(accent.h, accent.s, accent.l, s.a));
+      g.addColorStop(1, hslToCss(accent.h, accent.s, accent.l, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    if (grainAmount > 0 && noiseCanvas) {
+      ctx.save();
+      ctx.filter = 'none';
+      ctx.globalAlpha = grainAmount * 0.6;
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.drawImage(noiseCanvas, 0, 0, W, H);
+      ctx.restore();
+    }
+  };
+
+  let raf = null;
+  const requestRender = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = null;
+      render();
+    });
+  };
+
+  const updateLabels = () => {
+    color1Val.textContent = color1Input.value;
+    color2Val.textContent = color2Input.value;
+    grainVal.textContent = grainInput.value;
+  };
+
+  color1Input.addEventListener('input', () => { updateLabels(); requestRender(); });
+  color2Input.addEventListener('input', () => { updateLabels(); requestRender(); });
+  grainInput.addEventListener('input',  () => { updateLabels(); requestRender(); });
+
+  shuffleBtn.addEventListener('click', () => {
+    generateSeeds();
+    requestRender();
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    render();
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gradient.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  });
+
+  buildNoise();
+  generateSeeds();
+  updateLabels();
+  render();
+})();
+</script>
+</body>
+</html>
