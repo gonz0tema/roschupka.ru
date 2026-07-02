@@ -1,0 +1,41 @@
+/* Дизайн-токены roschupka-new.
+   Стартовые значения — могут меняться после разбора референсов.
+   Единственный источник правды для переменных дизайн-системы. */
+
+:root {
+  /* Шрифты */
+  --font-content: 'Literata', Georgia, serif;   /* тело поста */
+  --font-ui: 'Inter', system-ui, sans-serif;    /* интерфейс */
+
+  /* Цвета */
+  --color-text:           #1a1a1a;
+  --color-text-secondary: #6b6b6b;
+  --color-bg:             #ffffff;
+  --color-bg-subtle:      #f8f7f4;  /* шапка, футер */
+  --color-link:           #0060a0;
+  --color-link-hover:     #b03000;
+  --color-divider:        #dedede;
+  /* --color-accent: TBD — добавим после референсов */
+
+  /* Шкала шрифтов (размер / интерлиньяж) */
+  --text-xs:   12px / 16px;   /* подписи, копирайт */
+  --text-sm:   14px / 20px;   /* метаданные, теги, навигация */
+  --text-base: 17px / 26px;   /* основной текст */
+  --text-lg:   21px / 30px;   /* лид, интро */
+  --text-xl:   28px / 36px;   /* H3 */
+  --text-2xl:  36px / 44px;   /* H2 */
+  --text-3xl:  52px / 60px;   /* H1 / заголовок поста */
+
+  /* Отступы */
+  --space-1:  4px;   --space-2:  8px;   --space-3: 12px;
+  --space-4: 16px;   --space-6: 24px;   --space-8: 32px;
+  --space-12: 48px;  --space-16: 64px;  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Ширина */
+  --width-content: 680px;   /* тело поста, портфолио */
+  --width-wide:   1200px;   /* шапка, широкие картинки */
+
+  /* Брейкпоинты */
+  /* mobile: < 640px | tablet: 640–1024px | desktop: > 1024px */
+}
