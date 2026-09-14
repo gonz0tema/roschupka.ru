@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Локальный сервер для работы над темой.
 
-Отдаёт roschupka-new по http://localhost:4173/local/post.html
+Отдаёт проект по http://localhost:4173/local/post.html
 Нужен потому, что стандартный http.server падает на os.getcwd() в песочнице.
 """
 import functools
@@ -26,5 +26,5 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 socketserver.TCPServer.allow_reuse_address = True
 with socketserver.TCPServer(("127.0.0.1", PORT), functools.partial(Handler, directory=ROOT)) as httpd:
-    print(f"roschupka-new: http://localhost:{PORT}/local/post.html")
+    print(f"http://localhost:{PORT}/local/post.html")
     httpd.serve_forever()
