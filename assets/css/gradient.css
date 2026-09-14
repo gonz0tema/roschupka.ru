@@ -1,0 +1,479 @@
+/* Страница генератора градиентов. Подключается поверх темы: токены и шапка приходят
+   оттуда, здесь только раскладка мастерской и её органы управления.
+
+   Раскладка снята с photogradient.com (разбор — references/refs.md): холст слева и он
+   главный, все контролы — в одной карточке справа, разделённой волосяными линиями.
+
+   ⚠️ Страница статическая, без plain — значит базовый набор (шрифт, цвет, фон) задаём
+   сами: в теме это делает движок через свои переменные. */
+
+/* Свои переменные страницы. Общие токены сайта лежат в tokens.css — здесь только то,
+   что нужно одной этой странице. */
+:root {
+  --workbench-width: 780px;   /* мастерская целиком: холст + просвет + панель */
+  --panel-width: 260px;
+  --panel-text: 15px;
+  --panel-radius: 20px;       /* его же повторяет нижняя кнопка, она лежит в углу панели */
+
+  /* Тень слоями, снятая с референса: четыре слоя от плотного и близкого к слабому
+     и далёкому. Одна тень такой мягкости не даёт — либо резкая, либо грязная. */
+  --shadow-card:
+    0 1px 2px rgba(0, 0, 0, .10),
+    0 3px 3px rgba(0, 0, 0, .09),
+    0 7px 4px rgba(0, 0, 0, .05),
+    0 13px 5px rgba(0, 0, 0, .01);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-text);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Страница — колонка во всю высоту окна, чтобы подвал прижимался к низу экрана,
+   а не повисал под мастерской на середине. Контент выше окна — колонка растёт,
+   подвал уезжает вниз обычным порядком.
+
+   ⚠️ box-sizing обязателен: поля у .page свои, и без border-box они прибавились бы
+   к 100dvh — окно получило бы вертикальный скролл на пустом месте. Глобального
+   сброса на сайте нет, поэтому ставим точечно. */
+.page {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;   /* на телефоне адресная строка съедает часть vh */
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6) var(--space-16);
+}
+
+.site-header {
+  margin-bottom: var(--space-12);
+}
+
+
+/* ═══ Мастерская ═══
+   Панель фиксированной ширины, холсту достаётся остальное. Доля здесь не годится:
+   на широком экране контролы растягивались бы впустую. */
+
+/* ⚠️ У панели своя колонка фиксированной ширины, а не место по содержимому соседа.
+   Иначе при узком холсте (высота 3000) пара перецентровывалась и панель уезжала.
+   Пустоты вокруг холста мало, потому что вся мастерская ограничена по ширине. */
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--panel-width);
+  gap: var(--space-6);
+  align-items: start;
+  max-width: var(--workbench-width);
+}
+
+.canvas-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.canvas-stage {
+  position: relative;
+  line-height: 0;
+}
+
+/* Холст сам себя вписывает: пропорцию держат его атрибуты, а max-width и max-height
+   не дают вылезти. Поэтому 1000×4000 просто уменьшается, и вёрстка не едет. */
+/* ⚠️ Предел высоты стоит на самом холсте, а не на обёртке: процент от max-height
+   родителя не считается, и холст растягивал строку сетки вместо того, чтобы вписаться.
+   Высоту панели кладёт в переменную скрипт — средствами CSS «будь как соседняя
+   колонка» не выразить. */
+#preview {
+  display: block;
+  max-width: 100%;
+  max-height: var(--panel-height, 70vh);
+  width: auto;
+  height: auto;
+  border-radius: 32px;
+  box-shadow: var(--shadow-card);
+}
+
+
+/* ═══ Точки ═══
+   Лежат поверх холста отдельным слоем — в скачанный PNG не попадают. В покое их не видно,
+   показываются при наведении на холст и при переходе с клавиатуры. */
+
+.points {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.point {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .35);
+  cursor: grab;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity .15s, transform .1s;
+}
+
+.canvas-stage:hover .point,
+.point:focus-visible { opacity: 1; }
+
+.point:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.point.is-dragging { cursor: grabbing; transform: scale(1.15); opacity: 1; }
+
+
+/* ═══ Панель ═══
+   Одна карточка, блоки внутри разделены волосяными линиями: так у референса,
+   и так видно, что это единый пульт, а не четыре отдельных окна. */
+
+.panel {
+  border-radius: var(--panel-radius);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-card);
+}
+
+/* Боковые отступы живут на блоках, а не на панели: иначе разделители не доходили
+   бы до краёв. У референса так же. */
+.panel-block {
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.panel-block + .panel-block {
+  border-top: 1px solid var(--color-divider);
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.block-title {
+  margin: 0;
+  font-size: var(--panel-text);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.block-tools {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Слайдеры в строку: подпись слева, дорожка справа. Колонка подписей общая на весь блок,
+   поэтому дорожки начинаются и кончаются на одной вертикали независимо от длины слова.
+   Ради этого сетка живёт на блоке, а строки распускаются через display: contents. */
+.sliders {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--space-4);
+  row-gap: var(--space-4);
+}
+
+.control { display: contents; }
+
+/* Подписи, кнопка и дорожки набраны заголовочным серым, а не цветом текста:
+   в панели это метки интерфейса, а цветом текста набрано то, что вводит пользователь —
+   числа размера и коды цветов. Чисто чёрного в палитре нет вовсе. */
+.control-label {
+  font-size: var(--panel-text);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+
+/* ═══ Слайдеры ═══
+   Левая часть дорожки закрашена: долю считает скрипт и кладёт в --fill.
+   Интерфейс монохромный — цвет живёт только в самой картинке. */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-heading) 0 var(--fill, 50%),
+    var(--color-divider) var(--fill, 50%) 100%);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-divider);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: pointer;
+}
+
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+
+/* ═══ Цвета ═══
+   Список произвольной длины: хекс подписан рядом со свотчем, лишний цвет убирается
+   крестиком. Число цветов — оно же число пятен на холсте. */
+
+.swatches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.swatch {
+  display: grid;
+  grid-template-columns: 28px 1fr 24px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.swatch input[type="color"] {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-divider);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.swatch input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+.swatch input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 4px; }
+.swatch input[type="color"]::-moz-color-swatch { border: 0; border-radius: 4px; }
+
+.swatch-hex {
+  width: 84px;
+  text-transform: lowercase;
+}
+
+
+/* ═══ Размер ═══ */
+
+/* Размер одной строкой: «Размер 1080 × 1080». Порядок сторон привычный, поэтому
+   подписывать каждую отдельно не нужно — words остаются в aria-label. */
+.size-fields {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.size-fields .field-label { margin-right: auto; }
+
+.size-times {
+  color: var(--color-text-secondary);
+  font-size: var(--panel-text);
+}
+
+input[type="number"] { width: 56px; text-align: center; }
+
+.field-label {
+  font-size: var(--panel-text);
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+/* ⚠️ Стрелки-крутилки убираем: шаг в десять пикселей тут никому не нужен,
+   а места они съедают столько, что соседняя подпись налезала на поле. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Поля размера и коды цветов выглядят обычным текстом, а рамку показывают
+   под курсором и в фокусе — так у референса. */
+input[type="number"],
+.swatch-hex {
+  min-width: 0;
+  font-family: inherit;
+  font-size: var(--panel-text);
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  color: var(--color-text);
+  padding: 5px var(--space-2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  transition: border-color .15s, background-color .15s;
+}
+
+input[type="number"]:hover,
+.swatch-hex:hover {
+  border-color: var(--color-divider);
+}
+
+input[type="number"]:focus,
+.swatch-hex:focus {
+  outline: none;
+  border-color: var(--color-heading);
+  background: var(--color-bg);
+}
+
+
+/* ═══ Кнопки ═══ */
+
+button {
+  font-family: inherit;
+  font-size: var(--panel-text);
+  cursor: pointer;
+}
+
+/* Скачивание — строка во всю ширину подвала панели, без заливки: так у референса.
+   Кнопка-плашка перетягивала внимание, хотя действие здесь всего одно и очевидное. */
+.panel-footer { padding: 0; }
+
+.btn-flat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  border: 0;
+  border-radius: 0 0 var(--panel-radius) var(--panel-radius);
+  background: none;
+  color: var(--color-heading);
+  transition: background-color .15s;
+}
+
+.btn-flat:hover { background: var(--color-bg-subtle); }
+
+/* Иконки-действия: перемешать, добавить, убрать. Тише остального — это служебное. */
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-text-muted);
+  transition: color .15s, background-color .15s;
+}
+
+.btn-quiet:hover { color: var(--color-text); background: var(--color-bg-subtle); }
+.btn-quiet:disabled { opacity: .3; cursor: default; }
+.btn-quiet:disabled:hover { color: var(--color-text-muted); background: none; }
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* ═══ Подвал ═══
+   Ширина не страницы, а мастерской: правый край строки приходит ровно под правый край
+   панели, и низ страницы держит ту же вертикаль, что и содержимое. Тон и кегль взяты
+   у подвала блога — низ у всех страниц сайта должен читаться одинаково. */
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  max-width: var(--workbench-width);
+  /* Пустое место колонки достаётся верхнему полю подвала — так он прижат к низу окна.
+     Отбивка от мастерской при этом не пропадает: её держит padding, а не margin. */
+  margin-top: auto;
+  padding-top: var(--space-16);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Многоточие в диапазоне лет разрежено — как это делает Эгея в подвале блога:
+   иначе три точки слипаются в грязное пятно между числами. */
+.footer-dots {
+  margin-left: .07em;
+  letter-spacing: .07em;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.site-footer a,
+.site-footer a:visited {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-divider);
+  transition: color .15s, border-color .15s;
+}
+
+.site-footer a:hover {
+  color: var(--color-accent);
+  border-color: currentColor;
+}
+
+
+/* ═══ Узкие экраны ═══
+   Порог тот же, что во всей теме: 700. Панель уходит под холст. */
+
+@media (max-width: 700px) {
+  .page {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+
+  .site-header {
+    margin-bottom: var(--space-8);
+  }
+
+  .site-footer {
+    padding-top: var(--space-12);
+  }
+
+  .workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* В одну колонку равняться не по чему: панель уехала под холст. */
+  #preview {
+    max-height: 60vh;
+  }
+
+  /* Мыши нет — показываем точки сразу, иначе их не найти. */
+  .point { opacity: 1; }
+}

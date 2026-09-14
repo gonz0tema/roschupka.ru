@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Генератор градиентов — Артём Рощупка</title>
+<meta name="description" content="Генератор градиентов с зерном: цвета расставляются по холсту, картинка считается в браузере и скачивается в PNG.">
+<link rel="stylesheet" href="styles/main.css">
+<link rel="icon" href="/generator.ico" sizes="48x48">
+<link rel="icon" href="/generator-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/generator-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/generator-apple.png">
+</head>
+<body>
+<div class="page">
+
+<!--#header-->
+
+<main class="workbench">
+  <div class="canvas-wrap">
+    <!-- Точки лежат поверх холста отдельным слоем, а не рисуются внутри него:
+         так они не попадают в скачанный PNG. -->
+    <div class="canvas-stage">
+      <canvas id="preview" width="1080" height="1080"></canvas>
+      <div class="points" id="points"></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+
+    <section class="panel-block">
+      <div class="size-fields">
+        <span class="field-label">Размер</span>
+        <input type="number" id="width" min="200" max="4000" step="10" value="1080" aria-label="Ширина">
+        <span class="size-times" aria-hidden="true">×</span>
+        <input type="number" id="height" min="200" max="4000" step="10" value="1080" aria-label="Высота">
+      </div>
+    </section>
+
+    <section class="panel-block sliders">
+      <div class="control">
+        <label class="control-label" for="blur">Размытие</label>
+        <input type="range" id="blur" min="20" max="180" value="90">
+      </div>
+      <div class="control">
+        <label class="control-label" for="size">Размер пятен</label>
+        <input type="range" id="size" min="15" max="70" value="40">
+      </div>
+      <div class="control">
+        <label class="control-label" for="grain">Зерно</label>
+        <input type="range" id="grain" min="0" max="100" value="25">
+      </div>
+    </section>
+
+    <section class="panel-block">
+      <div class="block-head">
+        <h2 class="block-title">Цвета</h2>
+        <div class="block-tools">
+          <button class="btn-quiet" type="button" id="shuffle" aria-label="Новые цвета" title="Новые цвета">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M13.5 7a5.5 5.5 0 1 0-1.6 3.9"/>
+              <path d="M13.5 3.5V7H10"/>
+            </svg>
+          </button>
+          <button class="btn-quiet" type="button" id="addColor" aria-label="Добавить цвет" title="Добавить цвет">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 3.5v9M3.5 8h9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section class="panel-block panel-footer">
+      <button class="btn-flat" type="button" id="download">
+        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 2v8M5 7l3 3 3-3M2.5 13.5h11"/>
+        </svg>
+        Скачать PNG
+      </button>
+    </section>
+
+  </aside>
+</main>
+
+<!-- Подвал повторяет блоговый: там его рисует Эгея, здесь пишем руками.
+     Конечный год подставляет сборка, чтобы копирайт не протухал. -->
+<footer class="site-footer">
+  <span>© Артём Рощупка, 2019<span class="footer-dots">…</span><!--#year--></span>
+  <nav class="footer-links">
+    <a href="https://t.me/tema_roschupka">Написать в телеграме</a>
+    <a href="mailto:tema@roschupka.ru">Почта</a>
+  </nav>
+</footer>
+
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('preview');
+  const ctx = canvas.getContext('2d');
+  const el = (id) => document.getElementById(id);
+
+  const sliders = { blur: el('blur'), size: el('size'), grain: el('grain') };
+  const fields = { width: el('width'), height: el('height') };
+
+  // Цвет и точка — одна сущность: где точка, там и пятно этого цвета.
+  // Стартовых цветов пять: панель от этого выше, а холст равняется по ней — значит
+  // крупнее. Лишние можно убрать, панель и холст ужмутся следом.
+  let colors = [
+    { hex: '#ff5f6d', x: 0.24, y: 0.26 },
+    { hex: '#ff6fa5', x: 0.74, y: 0.22 },
+    { hex: '#a15fd5', x: 0.50, y: 0.52 },
+    { hex: '#6b6fd5', x: 0.24, y: 0.78 },
+    { hex: '#3a7bd5', x: 0.78, y: 0.76 },
+  ];
+  let noise = null;
+
+  const MIN_COLORS = 2;
+  const MAX_COLORS = 6;
+
+  // ---- цвет ----
+  const hexToRgb = (hex) => {
+    const m = hex.replace('#', '');
+    return {
+      r: parseInt(m.substring(0, 2), 16),
+      g: parseInt(m.substring(2, 4), 16),
+      b: parseInt(m.substring(4, 6), 16),
+    };
+  };
+
+  const rgbToHsl = ({ r, g, b }) => {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s; const l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s: s * 100, l: l * 100 };
+  };
+
+  const hslToCss = (h, s, l, a = 1) => `hsla(${h.toFixed(1)}, ${s.toFixed(1)}%, ${l.toFixed(1)}%, ${a})`;
+
+  const hslToHex = (h, s, l) => {
+    s /= 100; l /= 100;
+    const k = (n) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const ch = (n) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
+    return '#' + [ch(0), ch(8), ch(4)].map((v) => v.toString(16).padStart(2, '0')).join('');
+  };
+
+  // Случайная палитра — дугой по цветовому кругу, а не вразнобой. Полный рандом
+  // даёт либо радугу, либо грязь: тона спорят, и пятна мешаются в серое.
+  // Светлота и насыщенность держатся в рабочем диапазоне по той же причине.
+  const randomPalette = (count) => {
+    const base = Math.random() * 360;
+    const span = 60 + Math.random() * 120;
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    return Array.from({ length: count }, (_, i) => {
+      const t = count === 1 ? 0 : i / (count - 1);
+      return hslToHex(
+        (base + dir * span * t + 360) % 360,
+        65 + Math.random() * 25,
+        52 + Math.random() * 18,
+      );
+    });
+  };
+
+  // ---- зерно ----
+  // Строится один раз на размер холста: пересчитывать его в каждом кадре незачем.
+  const buildNoise = () => {
+    const W = canvas.width, H = canvas.height;
+    noise = document.createElement('canvas');
+    noise.width = W;
+    noise.height = H;
+    const nctx = noise.getContext('2d');
+    const img = nctx.createImageData(W, H);
+    const data = img.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      data[i] = data[i + 1] = data[i + 2] = v;
+      data[i + 3] = 255;
+    }
+    nctx.putImageData(img, 0, 0);
+  };
+
+  // ---- отрисовка ----
+  const render = () => {
+    const W = canvas.width, H = canvas.height;
+    const stops = colors.map((c) => rgbToHsl(hexToRgb(c.hex)));
+    const blur = +sliders.blur.value;
+    const spot = +sliders.size.value / 100;
+    const grain = +sliders.grain.value / 100;
+
+    // Подложка по диагонали: заливает углы, куда пятна не дотянулись.
+    ctx.save();
+    ctx.filter = 'none';
+    const base = ctx.createLinearGradient(0, 0, W, H);
+    stops.forEach((c, i) => {
+      base.addColorStop(stops.length === 1 ? 0 : i / (stops.length - 1), hslToCss(c.h, c.s, c.l));
+    });
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    ctx.save();
+    ctx.filter = `blur(${blur}px)`;
+    colors.forEach((c, i) => {
+      const cx = c.x * W;
+      const cy = c.y * H;
+      const radius = spot * Math.max(W, H);
+      const t = stops[i];
+      const accent = { h: t.h, s: Math.min(100, t.s * 1.05), l: Math.min(85, Math.max(30, t.l)) };
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      g.addColorStop(0, hslToCss(accent.h, accent.s, accent.l, 0.85));
+      g.addColorStop(1, hslToCss(accent.h, accent.s, accent.l, 0));
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    if (grain > 0 && noise) {
+      ctx.save();
+      ctx.filter = 'none';
+      ctx.globalAlpha = grain * 0.6;
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.drawImage(noise, 0, 0, W, H);
+      ctx.restore();
+    }
+  };
+
+  let raf = null;
+  const requestRender = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = null; render(); });
+  };
+
+  // ---- точки на холсте ----
+  const pointsLayer = el('points');
+
+  const placePoint = (node, c) => {
+    node.style.left = `${c.x * 100}%`;
+    node.style.top = `${c.y * 100}%`;
+  };
+
+  // Точки идут в том же порядке, что цвета, поэтому смену цвета можно донести до одной
+  // точки. Полная перерисовка слоя тут была бы напрасной: пипетка шлёт input на каждое
+  // движение, и весь слой пересобирался бы десятки раз в секунду.
+  const paintPoint = (i) => {
+    pointsLayer.children[i].style.setProperty('--dot', colors[i].hex);
+  };
+
+  const renderPoints = () => {
+    pointsLayer.textContent = '';
+    colors.forEach((c, i) => {
+      const node = document.createElement('button');
+      node.className = 'point';
+      node.type = 'button';
+      node.style.setProperty('--dot', c.hex);
+      node.setAttribute('aria-label', `Цвет ${i + 1}, перетащите или двигайте стрелками`);
+      placePoint(node, c);
+
+      node.addEventListener('pointerdown', (e) => {
+        node.setPointerCapture(e.pointerId);
+        node.classList.add('is-dragging');
+      });
+
+      node.addEventListener('pointermove', (e) => {
+        if (!node.hasPointerCapture(e.pointerId)) return;
+        const box = canvas.getBoundingClientRect();
+        c.x = Math.min(1, Math.max(0, (e.clientX - box.left) / box.width));
+        c.y = Math.min(1, Math.max(0, (e.clientY - box.top) / box.height));
+        placePoint(node, c);
+        requestRender();
+      });
+
+      node.addEventListener('pointerup', () => node.classList.remove('is-dragging'));
+
+      // Стрелками — шаг в процент холста: точку можно поставить и без мыши.
+      node.addEventListener('keydown', (e) => {
+        const step = e.shiftKey ? 0.1 : 0.01;
+        const moves = {
+          ArrowLeft: [-step, 0], ArrowRight: [step, 0],
+          ArrowUp: [0, -step], ArrowDown: [0, step],
+        };
+        if (!moves[e.key]) return;
+        e.preventDefault();
+        c.x = Math.min(1, Math.max(0, c.x + moves[e.key][0]));
+        c.y = Math.min(1, Math.max(0, c.y + moves[e.key][1]));
+        placePoint(node, c);
+        requestRender();
+      });
+
+      pointsLayer.append(node);
+    });
+  };
+
+  // ---- список цветов ----
+  const swatches = el('swatches');
+
+  const renderSwatches = () => {
+    swatches.textContent = '';
+    colors.forEach((c, i) => {
+      const row = document.createElement('div');
+      row.className = 'swatch';
+      row.innerHTML = `
+        <input type="color" value="${c.hex}" aria-label="Цвет ${i + 1}" tabindex="-1">
+        <input type="text" class="swatch-hex" value="${c.hex}" spellcheck="false" aria-label="Код цвета ${i + 1}">
+        <button class="btn-quiet" type="button" aria-label="Убрать цвет"${colors.length <= MIN_COLORS ? ' disabled' : ''}>
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"/></svg>
+        </button>`;
+
+      const picker = row.querySelector('input[type="color"]');
+      const field = row.querySelector('.swatch-hex');
+
+      picker.addEventListener('input', () => {
+        c.hex = picker.value;
+        field.value = c.hex;
+        paintPoint(i);
+        requestRender();
+      });
+
+      // Код можно вписать или вставить руками. Решётка необязательна,
+      // регистр любой; пока введено не шесть знаков — картинку не трогаем.
+      field.addEventListener('input', () => {
+        const hex = field.value.trim().replace(/^#/, '');
+        if (!/^[0-9a-f]{6}$/i.test(hex)) return;
+        c.hex = `#${hex.toLowerCase()}`;
+        picker.value = c.hex;
+        paintPoint(i);
+        requestRender();
+      });
+
+      // Ушли из поля — приводим к виду «#rrggbb», даже если ввели мусор.
+      field.addEventListener('blur', () => { field.value = c.hex; });
+
+      row.querySelector('button').addEventListener('click', () => {
+        colors.splice(i, 1);
+        redrawAll();
+      });
+
+      swatches.append(row);
+    });
+    el('addColor').disabled = colors.length >= MAX_COLORS;
+  };
+
+  // Холст равняется по высоте панели — как у референса, где они отличаются
+  // на восемь пикселей. Панель растёт со списком цветов, поэтому пересчитываем.
+  const stage = document.querySelector('.canvas-stage');
+  const panel = document.querySelector('.panel');
+  const syncPanelHeight = () => {
+    stage.style.setProperty('--panel-height', `${panel.offsetHeight}px`);
+  };
+
+  const redrawAll = () => {
+    renderSwatches();
+    renderPoints();
+    syncPanelHeight();
+    requestRender();
+  };
+
+  el('addColor').addEventListener('click', () => {
+    colors.push({
+      hex: randomPalette(1)[0],
+      x: 0.15 + Math.random() * 0.7,
+      y: 0.15 + Math.random() * 0.7,
+    });
+    redrawAll();
+  });
+
+  // Новая палитра, столько же цветов. Точки остаются на местах: композицию
+  // пользователь расставил руками, и сбрасывать её заодно с цветом незачем.
+  el('shuffle').addEventListener('click', () => {
+    const fresh = randomPalette(colors.length);
+    colors.forEach((c, i) => { c.hex = fresh[i]; });
+    redrawAll();
+  });
+
+  // ---- размер холста ----
+  const applySize = () => {
+    const w = Math.min(4000, Math.max(200, +fields.width.value || 1080));
+    const h = Math.min(4000, Math.max(200, +fields.height.value || 1080));
+    fields.width.value = w;
+    fields.height.value = h;
+    canvas.width = w;
+    canvas.height = h;
+    buildNoise();   // зерно живёт в холсте своего размера
+    render();
+  };
+
+  for (const f of Object.values(fields)) {
+    f.addEventListener('change', applySize);
+  }
+
+  // ---- слайдеры ----
+  // Закрашенная слева дорожка: доля считается из значения и уезжает в переменную.
+  const paintTrack = (input) => {
+    const share = (input.value - input.min) / (input.max - input.min);
+    input.style.setProperty('--fill', `${share * 100}%`);
+  };
+
+  for (const input of Object.values(sliders)) {
+    paintTrack(input);
+    input.addEventListener('input', () => { paintTrack(input); requestRender(); });
+  }
+
+  el('download').addEventListener('click', () => {
+    render();
+    canvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gradient-${canvas.width}x${canvas.height}.png`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  });
+
+  // Окно меняет ширину — панель меняет высоту: следим и за этим.
+  new ResizeObserver(syncPanelHeight).observe(panel);
+
+  // Первый кадр рисуем напрямую, а не через requestAnimationFrame: в скрытой вкладке
+  // очередь кадров заморожена, и холст остался бы пустым до первого показа.
+  buildNoise();
+  renderSwatches();
+  renderPoints();
+  syncPanelHeight();
+  render();
+})();
+</script>
+</body>
+</html>

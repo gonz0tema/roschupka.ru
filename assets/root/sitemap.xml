@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Карта статических страниц сайта. Блог сюда не входит: Эгея ведёт собственную
+     карту по адресу /blog/sitemap.xml и обновляет её сама, обе перечислены в robots.txt.
+
+     Прежняя версия этого файла была сделана генератором в 2023 году и к 2026-му врала
+     целиком: адреса заметок стояли в старом формате движка (?go=all/slug/), заметок
+     было восемь из девятнадцати, а главная страница с тех пор стала редиректом. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+<url>
+  <loc>https://roschupka.ru/done/</loc>
+  <lastmod>2024-04-11</lastmod>
+</url>
+
+<url>
+  <loc>https://roschupka.ru/gradient-generator/</loc>
+  <lastmod>2026-09-13</lastmod>
+</url>
+
+</urlset>

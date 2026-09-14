@@ -1,0 +1,730 @@
+/* Тема блога roschupka. Слой поверх стоковой темы «Простая» (plain).
+   plain даёт обвязку движка: шапку, ленту, навигацию, комментарии, формы.
+   Мы подключаемся следом и надстраиваем — сначала через переменные plain,
+   и только там, где переменной нет, своими правилами.
+
+   Почему устроено именно так — references/decisions.md
+   Как размечать тексты        — references/spec.md */
+
+
+/* ═══ 1. Мост к plain ═══
+   Наши токены прокидываются в переменные движка. Это делает бо́льшую часть работы. */
+
+:root {
+  --mainFontFamily:     var(--font-ui);
+  --noteMainFontFamily: var(--font-body);
+  --smallFontFamily:    var(--font-ui);
+
+  /* plain ждёт пары «кегль / интерлиньяж» в пикселях — считаем их из токенов,
+     чтобы источник правды остался один. */
+  --noteTextFontSize:      var(--text-base);
+  --noteTextLineHeight:    calc(var(--text-base) * var(--leading-text));
+  --noteLeadFontSize:      var(--text-lg);
+  --noteLeadLineHeight:    calc(var(--text-lg) * var(--leading-text));
+  --subHeadingFontSize:    var(--text-xl);
+  --subHeadingLineHeight:  calc(var(--text-xl) * var(--leading-heading));
+  --noteTitleFontSize:     var(--text-2xl);
+  --noteTitleLineHeight:   calc(var(--text-2xl) * var(--leading-heading));
+  --pageHeadingFontSize:   var(--text-xl);
+  --pageHeadingLineHeight: calc(var(--text-xl) * var(--leading-heading));
+  --blogTitleFontSize:     var(--text-lg);
+  --blogTitleLineHeight:   calc(var(--text-lg) * var(--leading-heading));
+  --smallFontSize:         var(--text-sm);
+  --smallLineHeight:       calc(var(--text-sm) * 1.3);
+
+  --backgroundColor:      var(--color-bg);
+  --foregroundColor:      var(--color-text);
+  --headingsColor:        var(--color-heading);
+  --boldColor:            var(--color-text);
+  --engineTextColor:      var(--color-text-muted);
+  --linkColor:            var(--color-link);
+  /* Ссылки под курсором розовеют — цветом вордмарка. Жёлтый пробовали: на белом
+     у него контраст 1,39:1, текст под курсором почти пропадал. Вернулись.
+     Подчёркивание под курсором тоже розовое: у plain оно осталось бы кирпичным. */
+  --hoverColor:           var(--color-accent);
+  --activeColor:          var(--color-accent);
+  --hoverUnderlineColor:  color-mix(in srgb, var(--color-accent) 15%, transparent);
+  --thinRuleColor:        var(--color-divider);
+  --markedTextBackground: var(--color-mark);
+
+  /* Служебные иконки автора: плюс, шестерёнка, звезда, карандаш. У plain они
+     ярко-зелёные и перетягивают внимание с текста. Видны только автору. */
+  --adminColor:          var(--color-text-muted);
+  --adminUnderlineColor: var(--color-divider);
+
+  /* Аватарку не показываем: её место занял вордмарк. */
+  --displayLogo:         none;
+  --displayLogoCompact:  none;
+  --displayLogoMarginal: none;
+}
+
+
+/* ═══ 2. Раскладка ═══
+   Три ступени ширины от общего левого края: текст 600, композиция 920, широкая 1120.
+   Просвет между текстом и полем заметок получается сам: 920 − 600 − 200. */
+
+.e2-text {
+  max-width: var(--width-composition);
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.e2-text p,
+.e2-text h2,
+.e2-text h3,
+.e2-text ul,
+.e2-text ol,
+.e2-text li,
+.e2-text pre,
+.e2-text blockquote,
+.e2-text .loud {
+  max-width: var(--width-text);
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Зазор абзацев считаем от кегля, а не от интерлиньяжа: доля от интерлиньяжа
+   съёживается вместе с ним при плотном наборе. */
+.e2-text p,
+.e2-text ul,
+.e2-text ol,
+.e2-text blockquote {
+  margin-bottom: calc(var(--text-base) * 0.9);
+}
+
+/* plain задаёт заголовки внутри заметки числом. Отступ сверху большой,
+   снизу малый — заголовок прижат к своему тексту. */
+.e2-text h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-display);
+  margin-top: var(--space-12);
+  margin-bottom: var(--space-3);
+}
+
+.e2-text h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-heading);
+  font-weight: var(--weight-display);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-2);
+}
+
+/* Заголовок заметки — в ленте и на своей странице. plain ставит ему bold. */
+.e2-note h1,
+.e2-note-snippet h1,
+.e2-note-title,
+.e2-note-title a,
+h1.e2-smart-title,
+h1.e2-smart-title a {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  line-height: var(--leading-heading);
+}
+
+/* Плотность гасилки — ею маркер растворяется. Регистрируем свойство, иначе его
+   не анимировать: браузер не знает, что это число, и переключает скачком. */
+@property --marker-fade {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: false;
+}
+
+/* ───── Маркер ─────
+   Мазок маркера, нарисованный Артёмом от руки. Им отмечены заголовки записей
+   под курсором, пункты шапки под курсором и текущий раздел — этот всегда.
+
+   Мазок лежит неподвижно во всю строку, а над ним уезжает вправо шторка цвета бумаги —
+   мазок открывается слева направо, начиная со своего левого конца.
+
+   ⚠️ Возить сам мазок нельзя, пробовали. Въезжая, он показывает сначала свою середину,
+   а она ровная: получается прямоугольник, который потом отращивает концы. Двигаться
+   должна шторка, а не рисунок.
+
+   Курсор ушёл — мазок тает под второй шторкой, сплошной и во всю ширину: её плотность
+   идёт от нуля к единице. Первая тем временем возвращается на место скачком, уже
+   под невидимым мазком.
+
+   ⚠️ Мазок — вектор: рисунок обведён по кромкам, поэтому тянется на любую длину
+   без мыла. Цвет и прозрачность зашиты в самом файле (#ffd801, 0.7) — фоновую
+   картинку из CSS не перекрасить, а маской её не сделать: маска режет вместе с фоном
+   и текст. Менять цвет — в assets/img/brush.svg.
+
+   Высота и вылет по краям — в переменных: это то, что хочется крутить руками.
+
+   Центр полосы считан по метрикам гарнитуры, а не по середине коробки: метрики
+   несимметричны, и по середине полоса садится выше букв. Берём центр видимой массы
+   вместе со свесами — ascent минус половина расстояния от верха прописных до низа
+   свесов. PT Serif Bold: 1,04 − (0,7 − 0,2)/2 = 0,79. PT Sans: 1,02 − 0,25 = 0,77.
+
+   ⚠️ box-decoration-break: clone обязателен. Без него на переносе поля достаются
+   только первой и последней строке, и середина заголовка остаётся без вылета.
+
+   ⚠️ Цвет букв держим свой, и перебиваем его переменной, а не селектором. plain красит
+   ссылку под курсором в --hoverColor, причём двумя путями: по :hover и по классу
+   .hover, который вешает скрипт движка. Подменяя саму переменную в границах ссылки,
+   мы закрываем оба сразу — и залипший после тапа класс тоже. */
+.e2-note h1 a,
+.e2-note-snippet h1 a,
+.e2-note-title a,
+h1.e2-smart-title a,
+.site-nav a,
+.site-contacts a {
+  --marker-fade: 1;
+  --marker-height: 1.1em;
+  --marker-bleed: .3em;
+  --marker-center: .79em;  /* PT Serif Bold */
+  --marker-top: calc(var(--marker-center) - var(--marker-height) / 2);
+
+  /* Порядок слоёв сверху вниз: шторка въезда, шторка растворения, сам мазок. */
+  background-image:
+    linear-gradient(to right, transparent 50%, var(--color-bg) 50%),
+    linear-gradient(
+      color-mix(in srgb, var(--color-bg) calc(var(--marker-fade) * 100%), transparent),
+      color-mix(in srgb, var(--color-bg) calc(var(--marker-fade) * 100%), transparent)),
+    url('../img/brush.svg');
+  background-repeat: no-repeat;
+  background-size: 200% var(--marker-height), 100% var(--marker-height), 100% var(--marker-height);
+  background-position: 100% var(--marker-top), 0 var(--marker-top), 0 var(--marker-top);
+  padding-inline: var(--marker-bleed);
+  margin-inline: calc(var(--marker-bleed) * -1);
+  -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+  transition: --marker-fade .2s ease-out, background-position 0s linear .2s;
+}
+
+/* Заголовки набраны PT Serif, шапка — PT Sans, и вылет в шапке меньше:
+   пункты стоят в строку через 16px, широкая полоса сдвинула бы их друг к другу. */
+.e2-note h1 a,
+.e2-note-snippet h1 a,
+.e2-note-title a,
+h1.e2-smart-title a {
+  --hoverColor: var(--color-heading);
+}
+
+.site-nav a,
+.site-contacts a {
+  --hoverColor: var(--color-text);
+  --marker-center: .77em;   /* PT Sans */
+  --marker-bleed: .2em;
+}
+
+
+.e2-note h1 a:hover,
+.e2-note-snippet h1 a:hover,
+.e2-note-title a:hover,
+h1.e2-smart-title a:hover,
+.site-nav a:hover,
+.site-contacts a:hover,
+.site-nav a.is-current {
+  --marker-fade: 0;
+  background-position: 0 var(--marker-top), 0 var(--marker-top), 0 var(--marker-top);
+  transition: background-position .15s ease-out, --marker-fade 0s;
+}
+
+/* Эгея связывает ссылки, ведущие в одно место: наводишь на «Нет комментариев» —
+   подсвечивается «Читать дальше» той же записи, причём только в одну сторону (у меты
+   адрес с якорем #comments, и движок сверяет его без якоря). Связь мы не показываем:
+   красится только то, под чем реально курсор.
+
+   Заголовки и шапку правило не трогает — там --hoverColor и так равен цвету покоя. */
+.e2-text a.hover:not(:hover),
+.band-item a.hover:not(:hover) {
+  --hoverColor: var(--linkColor);
+  --hoverUnderlineColor: var(--linkUnderlineColor);
+}
+
+/* ⚠️ Посещённые ссылки у plain приглушены до #70a0b0, и сброса через переменную им мало:
+   вместо ховера они вспыхивали насыщенным синим — тот же артефакт, только тише.
+   Цвет здесь задаётся напрямую: кастомные свойства в :visited браузер игнорирует,
+   он пускает туда лишь короткий список свойств, и color с border-color в нём есть. */
+.e2-text a.hover:not(:hover):visited,
+.band-item a.hover:not(:hover):visited {
+  color: var(--linkColorVisited);
+  border-color: var(--linkUnderlineColorVisited);
+}
+
+/* Подчёркивание заголовков plain рисует нижней рамкой, а не text-decoration. */
+.e2-note h1 a,
+.e2-note h1 a:visited,
+.e2-note-snippet h1 a,
+.e2-note-title a,
+h1.e2-smart-title a,
+h1.e2-smart-title a:visited,
+.title h1 a,
+.title h1 a:visited {
+  border-bottom: 0;
+  text-decoration: none;
+}
+
+/* ───── Шапка ─────
+   Вордмарк слева, справа две строки: разделы сайта и контакты. Поиск у правого края.
+
+   Вордмарк стоит на месте названия блога: текст остаётся в разметке — его читают
+   поисковики и озвучивают скринридеры, — а видно картинку.
+
+   Строки ссылок приходят из user/extras/header-post.tmpl.php и ложатся рядом с блоком
+   шапки, а не внутрь. Чтобы разложить всё одной сеткой, блок распускаем
+   через display: contents. */
+
+.flag {
+  display: grid;
+  grid-template-columns: auto 1fr auto;   /* вордмарк | текст | поиск */
+  grid-template-rows: min-content min-content auto;
+  column-gap: var(--space-6);
+  row-gap: 0;
+  align-items: start;
+  max-width: 82%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.header-content,
+.header-description,
+.title,
+.title-inner {
+  display: contents;
+}
+
+/* Вордмарк занимает три строки, хотя текста две: лишняя высота уходит в пустую третью.
+   Иначе он растягивал бы строки текста и шаг рос вместе с ним. */
+.title h1      { grid-area: 1 / 1 / 4 / 2; margin: 0; }
+.site-nav      { grid-area: 1 / 2 / 2 / 3; }
+.site-contacts { grid-area: 2 / 2 / 3 / 3; }
+
+/* plain держит поиск абсолютно, отсчитывая от блока шапки. Блок распущен,
+   точка отсчёта пропала — возвращаем поиск в сетку. */
+.spotlight {
+  position: static;
+  grid-area: 1 / 3 / 2 / 4;
+}
+
+/* Подзаголовок блога в шапке не показываем */
+#e2-blog-description {
+  display: none;
+}
+
+/* Вордмарк. Высота считается по пропорции файла.
+
+   Файл работает маской, а не картинкой: от него берётся только форма надписи,
+   цвет задаёт CSS. Поэтому надпись перекрашивается по курсору, и файл остаётся
+   один — красить второй экземпляр не нужно.
+
+   ⚠️ mask-size идёт после шортката mask: шорткат его сбрасывает. */
+.title h1 span,
+.site-wordmark {
+  display: block;
+  width: var(--size-wordmark);
+  height: calc(var(--size-wordmark) / var(--wordmark-ratio));
+  background-color: var(--color-heading);
+  -webkit-mask: url('../img/wordmark.webp') no-repeat left center;
+          mask: url('../img/wordmark.webp') no-repeat left center;
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  overflow: hidden;
+  text-indent: -200vw;
+  transition: transform .2s, background-color .15s;
+}
+
+.title h1 span:hover,
+.site-wordmark:hover {
+  transform: rotate(-2deg);
+  background-color: var(--color-accent);
+}
+
+/* ───── Корона ─────
+   Пасхалка: под курсором над буквами «up» прорисовывается корона Артёма — слева направо,
+   косым фронтом, будто её мажут маркером. Курсор ушёл — корона пропадает разом:
+   анимация только у появления, стирать её никто не просил.
+
+   Рисунок от руки, поэтому он работает маской, как и вордмарк: толщина штриха гуляет,
+   обводкой такое не повторить. Цвет задаёт CSS.
+
+   Место выбрано по замеру надписи: «u» и «p» занимают 62–78% ширины, и верхние выносные
+   «h» и «k» обходят этот просвет слева и справа. Корона садится в ту же ячейку сетки,
+   что и вордмарк, и отступает от её левого края; отрицательное верхнее поле приподнимает
+   её над надписью. Абсолютное позиционирование не годится: у блока шапки своё верхнее
+   поле, и отсчёт от него уводил бы корону выше.
+
+   ⚠️ pointer-events: none обязателен. Корона лежит поверх вордмарка, и без этого
+   курсор над ней терял бы надпись, ховер срывался, корона мигала бы. */
+.crown {
+  grid-area: 1 / 1 / 2 / 2;
+  justify-self: start;
+  align-self: start;
+  margin-left: calc(var(--size-wordmark) * .62);
+  margin-top: calc(var(--size-wordmark) * -.04);
+  width: calc(var(--size-wordmark) * .16);
+  aspect-ratio: 320 / 235;
+  pointer-events: none;
+  background-color: var(--color-highlight);
+  -webkit-mask: url('../img/crown.webp') no-repeat center;
+          mask: url('../img/crown.webp') no-repeat center;
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  clip-path: polygon(0 0, 0 0, -12% 100%, -12% 100%);
+}
+
+.flag:has(.title h1 span:hover) .crown,
+.site-header:has(.site-wordmark:hover) .crown {
+  clip-path: polygon(0 0, 112% 0, 100% 100%, -12% 100%);
+  transition: clip-path .35s ease-out .18s;   /* задержка — пока идёт поворот */
+}
+
+/* Кому анимации мешают — корона просто появляется целиком. */
+@media (prefers-reduced-motion: reduce) {
+  .flag:has(.title h1 span:hover) .crown,
+  .site-header:has(.site-wordmark:hover) .crown { transition: none; }
+}
+
+/* Разделы и контакты набраны одинаково: один кегль, один вес, один цвет.
+   Так у Бизикова — всё меню 19/400 чёрным, выделен только текущий раздел. */
+.site-nav,
+.site-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-nav);   /* шаг строк задаёт интерлиньяж, добавочного зазора нет */
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+/* Пара строк ссылок садится серединой на среднюю линию вордмарка. Сдвиг = путь
+   до средней линии минус половина высоты пары, то есть одна строка.
+   Поиск едет вместе с ними, иначе отстанет от первой строки меню. */
+.site-nav,
+.spotlight {
+  margin-top: calc(
+    var(--size-wordmark) / var(--wordmark-ratio) * var(--wordmark-center)
+    - var(--text-base) * var(--leading-nav)
+  );
+}
+
+/* Цвет букв в шапке не меняется никогда: и текущий раздел, и пункт под курсором
+   отмечены жёлтой полосой — см. секцию «Маркер» выше. */
+.site-nav a,
+.site-nav a:visited,
+.site-contacts a,
+.site-contacts a:visited {
+  color: var(--color-text);
+  border-bottom: 0;
+  text-decoration: none;
+}
+
+.site-nav a.is-current {
+  cursor: default;
+}
+
+/* Та же сетка для статических страниц, но без третьей колонки: поиска там нет */
+.site-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-6);
+  row-gap: var(--space-2);
+  align-items: start;
+}
+
+.site-wordmark              { grid-area: 1 / 1 / 4 / 2; margin: 0; }
+.site-header .site-nav      { grid-area: 1 / 2 / 2 / 3; }
+.site-header .site-contacts { grid-area: 2 / 2 / 3 / 3; }
+
+.footer,
+.e2-rss,
+.e2-rss-button {
+  color: var(--color-text-muted);
+}
+
+
+/* ═══ 3. Медиа ═══
+   Картинки к мере строки не привязаны: мера — правило про чтение, у картинки строк нет. */
+
+/* clear: right — чтобы картинка не наезжала на заметку, висящую сбоку.
+   Инлайновую ширину Эгея берёт из размеров файла, перебиваем. */
+.e2-text-picture {
+  max-width: var(--width-composition);
+  margin-left: 0;
+  margin-right: auto;
+  clear: right;
+}
+
+/* Обёртка картинки, но не подпись: подпись — такой же прямой div. */
+.e2-text-picture > div:not(.e2-text-caption),
+.e2-text-picture img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* Подпись идёт по ширине картинки, а не текста. У суженных картинок
+   подстроится сама — она внутри блока картинки. */
+.e2-text-caption {
+  max-width: var(--width-composition);
+  margin-left: 0;
+  margin-right: auto;
+  font-size: var(--text-xs);
+  line-height: 1.35;
+}
+
+/* Вставки лежат прямо в .e2-text, движок их ничем не оборачивает, — ширину
+   задавать не нужно, достаточно снять inline max-width в самом коде вставки.
+   display: block убирает щель от базовой линии под картой. */
+.e2-text iframe,
+.e2-text embed,
+.e2-text object {
+  max-width: 100%;
+}
+
+.e2-text iframe {
+  display: block;
+  box-shadow: var(--shadow-embed);
+}
+
+/* Галерея: точки переносим на саму фотографию — своей полосой они отталкивали
+   подпись от снимка. .fotorama__wrap уже position: relative.
+   Точки белые с тенью: фон под ними произвольный, штатный серый теряется. */
+.e2-text-picture .fotorama__nav-wrap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+.e2-text-picture .fotorama__dot {
+  border-color: #fff;
+  box-shadow: 0 0 3px rgba(0, 0, 0, .6);
+}
+
+.e2-text-picture .fotorama__nav__frame--dot.fotorama__active .fotorama__dot {
+  background-color: #fff;
+}
+
+
+/* ═══ 4. Классы разметки ═══
+   Словарь Артёма: этими классами размечены тексты заметок. В plain их нет. */
+
+/* Заметка на полях. Абзацем — текстовая, обёрткой — картинка на полях.
+   clear: right — чтобы несколько заметок подряд вставали друг под друга. */
+.e2-text .note {
+  float: right;
+  clear: right;
+  width: var(--width-note);
+  max-width: var(--width-note);
+  margin: 0 0 var(--space-6) var(--space-12);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+/* Картинка внутри поля: шире 200 ей не стать, а clear внутри float рвал бы поток. */
+.e2-text .note .e2-text-picture {
+  max-width: 100%;
+  margin: 0;
+  clear: none;
+}
+
+/* Блок в паре с заметкой: заметка ставится в тексте ПЕРЕД тем, к чему относится.
+   Широкий блок не оставил бы ей места, а clear отбросил бы его вниз — пара рвётся.
+   Правило намеренно общее (+ *): так же ведут себя встроенные карты.
+   !important — у карт ширина прописана инлайном прямо в тексте заметки. */
+.e2-text p.note + *,
+.e2-text p.note + * .e2-text-picture {
+  max-width: var(--width-text) !important;
+  clear: none;
+}
+
+/* plain поднимает список на 10px, когда тот идёт за абзацем — считает, что абзац
+   его вводит. Ни заметка, ни подпись списка не вводят. */
+.e2-text .note + ol,
+.e2-text .note + ul,
+.e2-text p.caption + ol,
+.e2-text p.caption + ul {
+  margin-top: 0;
+}
+
+/* Подпись к тому, чего Эгея подписью не считает: карты, вставки, видео.
+   Отбивка снизу больше, чем у штатной: та лежит внутри блока картинки
+   и добирает хвост от него, а эта стоит в потоке сама. */
+.e2-text p.caption {
+  max-width: var(--width-composition);
+  margin-top: 6px;
+  margin-bottom: var(--space-12);
+  font-size: var(--text-xs);
+  line-height: 1.35;
+}
+
+/* «Крик» — громкая фраза жёлтой плашкой. plain делает из неё тонкую линейку слева. */
+.e2-text .loud {
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  line-height: 1.3;
+  font-weight: 700;   /* у PT Sans нет 800: браузер подделывал бы жирность */
+  background-color: var(--color-mark);
+  padding: var(--space-6) var(--space-4) var(--space-8);
+  border: none;
+  margin-top: var(--space-8);
+}
+
+/* Серая плашка с оговоркой */
+.disclaimer {
+  max-width: var(--width-text);
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  border: none;
+  padding: var(--space-6) var(--space-16) var(--space-8) var(--space-4);
+}
+
+.disclaimer h3 { color: var(--color-heading); opacity: .7; }
+.disclaimer p,
+.disclaimer h3 { margin: 0 0 var(--space-3); }
+
+/* Скриншот: тень рисует тема, файл режется вплотную к окну. Подпись вплотную. */
+.screenshot .e2-text-picture img {
+  box-shadow: var(--shadow-embed);
+}
+
+.screenshot .e2-text-caption {
+  margin-top: 0;
+}
+
+/* Картинка по ширине текста — когда сузить нужно поштучно. */
+.small-picture .e2-text-picture,
+.small-picture .e2-text-picture.fotorama,
+.small-picture .e2-text-video,
+.small-picture .e2-text-audio {
+  max-width: var(--width-text);
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Кат: хвост заметки виден только на её странице.
+   Ленту отличаем по навигации «пред./след.» — на странице записи она есть.
+   Класс вешается на один блок, поэтому «всё, что ниже» добираем комбинатором ~. */
+body:not(:has(.e2-pages-prev-next)) .e2-text .cut,
+body:not(:has(.e2-pages-prev-next)) .e2-text .cut ~ * {
+  display: none;
+}
+
+body:has(.e2-pages-prev-next) .only-feed { display: none; }
+
+/* Таблица во всю композицию, вровень с картинками. Разрядка по строкам,
+   подсветка при наведении. */
+.big-table .e2-text-table {
+  width: 100%;
+  max-width: var(--width-composition);
+  clear: right;
+}
+
+.big-table table {
+  border-collapse: separate;
+  border-spacing: 0 var(--space-6);
+}
+
+.big-table tr { transition: .3s; }
+.big-table tr:hover { background-color: var(--color-bg-subtle); }
+
+/* Сетка фотографий по три в ряд. В разметке — плоский список <img> через <br>. */
+.photo-grid p {
+  max-width: none !important;
+  margin: var(--space-6) 0;
+  position: relative;
+}
+
+.photo-grid p br { display: none; }
+
+.photo-grid img {
+  width: calc(33.333% - 4px);
+  height: auto;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Карта Воронежа: подтягивает следующий блок вплотную */
+.vrn-map .e2-text-picture,
+.vrn-map .e2-text-picture.fotorama,
+.vrn-map .e2-text-video,
+.vrn-map .e2-text-audio {
+  margin-bottom: -45px;
+}
+
+/* Ссылка-кнопка. Рамка цветом текста, поэтому под курсором розовеет вместе с ним —
+   отдельного правила на ховер не нужно, цвет приходит от plain через --hoverColor.
+
+   ⚠️ Заливки тут была тройка правил из старой тёмной темы: белый с прозрачностью
+   на ховер и белый на нажатие. На белом фоне они не давали ничего, а в :visited
+   браузер фон и не пускает — в этот псевдокласс проходит короткий список свойств. */
+a.button {
+  display: inline-block;
+  font-weight: 700;
+  text-decoration: none;
+  user-select: none;
+  padding: .5em 2em;
+  outline: none;
+  border: 2px solid;
+  border-radius: 1px;
+  transition: .2s;
+}
+
+
+/* ═══ 5. Узкие экраны ═══
+   Поля даёт контейнер plain — своих сверху не добавляем, иначе отступ двойной. */
+
+/* Поля под заметку нет: текстовую прячем совсем, как было в старой теме.
+   Картинку на полях оставляем — заметка дополнение, картинка содержание. */
+@media (max-width: 1023px) {
+  .e2-text p.note { display: none; }
+
+  .e2-text div.note {
+    float: none;
+    width: auto;
+    max-width: 100%;
+    margin: 0 0 var(--space-6);
+  }
+}
+
+/* Широкая таблица не помещается — вместо неё мобильная версия из текста заметки. */
+@media (min-width: 701px) {
+  .big-table-mobile { display: none; }
+}
+
+@media (max-width: 700px) {
+  .big-table { display: none; }
+  .big-table-mobile { display: block; }
+
+  /* Ширина 82% — десктопная мера контейнера plain. На узких экранах поля свои,
+     берём их из переменных движка, иначе шапка не совпадает с колонкой текста.
+
+     Композиция вертикальная: вордмарк сверху во всю ширину, под ним строки ссылок.
+     Поиск стоит в одной строке с вордмарком, у правого края, — так он ни с чем
+     не пересекается. */
+  .flag {
+    max-width: none;
+    grid-template-columns: 1fr auto;   /* вордмарк | поиск */
+    grid-template-rows: repeat(3, min-content);
+    padding-left: var(--marginLeftCompact);
+    padding-right: var(--marginRightCompact);
+  }
+
+  .title h1      { grid-area: 1 / 1 / 2 / 2; margin-bottom: var(--space-4); }
+  .spotlight     { grid-area: 1 / 2 / 2 / 3; justify-self: end; align-self: center; }
+  .site-nav      { grid-area: 2 / 1 / 3 / 3; }
+  .site-contacts { grid-area: 3 / 1 / 4 / 3; }
+
+  /* Выравнивать по средней линии нечего: композиция вертикальная, ссылки под вордмарком. */
+  .site-nav,
+  .spotlight { margin-top: 0; }
+
+  /* То же и на статических страницах, только без поиска. Без этого ссылки оставались
+     во второй колонке и ломались по словам: «Генератор / градиентов». */
+  .site-header {
+    grid-template-columns: 1fr;
+  }
+
+  .site-wordmark              { grid-area: 1 / 1 / 2 / 2; margin-bottom: var(--space-4); }
+  .site-header .site-nav      { grid-area: 2 / 1 / 3 / 2; }
+  .site-header .site-contacts { grid-area: 3 / 1 / 4 / 2; }
+}
